@@ -5,22 +5,24 @@
   "description": "Captures audio from system, microphone, and screen sharing and displays it in a text box",
   "oauth2": {
     "client_id": "372772514971-mmr8hnilnp49t4jh73mn1jsbm0i84sfq.apps.googleusercontent.com",
-    "scopes": [
-      "https://www.googleapis.com/auth/userinfo.profile",
-      "https://www.googleapis.com/auth/userinfo.email"
-    ]
+    "scopes": ["https://www.googleapis.com/auth/userinfo.profile"]
   },
   "permissions": [
     "identity",
     "tabCapture",
     "audioCapture",
     "storage",
-    "https://*.googleapis.com/*" 
+    "https://*.googleapis.com/*"
+  ],
+  "host_permissions": [
+    "https://*.googleapis.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-   
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
     }
   },
   "icons": {

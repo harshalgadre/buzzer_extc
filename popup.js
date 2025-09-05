@@ -124,70 +124,117 @@ function getRecentTranscript() {
 async function getAIResponse(question, force = false) {
   try {
     document.getElementById('status').textContent = 'Getting AI response...';
-    
-    // Improved error handling and timeout
+
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-    
-    // Call Gemini API with better error handling - fixed API endpoint
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyDwaIDizAt1mWFV1EP_Vu1SRFYm-w6JBkc', {
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+    const apiKey = 'AIzaSyDwaIDizAt1mWFV1EP_Vu1SRFYm-w6JBkc';
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `You are an expert technical interview assistant. Provide a clear, concise, and accurate answer to this question: ${question}`
-          }]
-        }],
+        contents: [
+          {
+            parts: [
+              {
+                text: `Explain node.js in simple terms.`
+              }
+            ]
+          }
+        ],
         generationConfig: {
           temperature: 0.2,
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 800,
+          maxOutputTokens: 2048 // Try a higher token limit
         }
       }),
       signal: controller.signal
     });
-    
+
     clearTimeout(timeoutId);
-    
+
     if (!response.ok) {
       throw new Error(`API error: ${response.status} ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-      throw new Error('Invalid response format from API');
+    console.log("API Response:", data);
+
+    let answer = '';
+
+    // Check for finishReason and extract answer if present
+    if (
+      data.candidates &&
+      data.candidates.length > 0 &&
+      data.candidates[0].finishReason !== "MAX_TOKENS"
+    ) {
+      const candidate = data.candidates[0];
+      if (
+        candidate.content &&
+        candidate.content.parts &&
+        candidate.content.parts.length > 0
+      ) {
+        answer = candidate.content.parts.map(part => part.text || '').join(' ');
+      }
     }
-    
-    const answer = data.candidates[0].content.parts[0].text;
-    
-    // Display the answer with better formatting
+
+    // If no answer or finishReason is MAX_TOKENS, use fallback
+    if (!answer.trim()) {
+      provideFallbackResponse(question);
+      return;
+    }
+
     const aiResponse = `<div class="ai-response"><strong>AI:</strong> ${answer}</div>`;
     document.getElementById('transcript').innerHTML += aiResponse;
-    
-    // Update floating window if active
+
     if (floatingWindow && !floatingWindow.closed) {
       floatingWindow.document.getElementById('floating-transcript').innerHTML += aiResponse;
     }
-    
+
     document.getElementById('status').textContent = 'AI response received';
   } catch (error) {
     console.error('AI response error:', error);
     document.getElementById('status').textContent = `Error: ${error.message}`;
-    
-    // Show error in transcript too
+
     const errorMsg = `<div class="ai-error">Failed to get AI response: ${error.message}. Try again.</div>`;
     document.getElementById('transcript').innerHTML += errorMsg;
-    
-    // Update floating window if active
+
     if (floatingWindow && !floatingWindow.closed) {
       floatingWindow.document.getElementById('floating-transcript').innerHTML += errorMsg;
     }
+
+    provideFallbackResponse(question);
   }
+}
+
+// Add a fallback function for common technical questions
+function provideFallbackResponse(question) {
+  const questionLower = question.toLowerCase();
+  let answer = '';
+  
+  if (questionLower.includes('node.js')) {
+    answer = "Node.js is a JavaScript runtime built on Chrome's V8 engine that allows executing JavaScript code outside a web browser. It uses an event-driven, non-blocking I/O model making it lightweight and efficient for building scalable network applications. Key features include npm (package manager), asynchronous programming, and a rich ecosystem of libraries.";
+  } else if (questionLower.includes('javascript')) {
+    answer = "JavaScript is a high-level, interpreted programming language that conforms to the ECMAScript specification. It's primarily used for web development to create dynamic content, control multimedia, animate images, and much more. JavaScript is prototype-based with first-class functions, making it a multi-paradigm language supporting object-oriented, imperative, and functional programming styles.";
+  } else if (questionLower.includes('react')) {
+    answer = "React is a JavaScript library for building user interfaces, particularly single-page applications. It's maintained by Facebook and a community of developers. React allows developers to create large web applications that can change data without reloading the page. Key concepts include components, JSX, virtual DOM, and unidirectional data flow.";
+  } else {
+    return; // No fallback available
+  }
+  
+  // Display the fallback answer
+  const aiResponse = `<div class="ai-response"><strong>AI (Fallback):</strong> ${answer}</div>`;
+  document.getElementById('transcript').innerHTML += aiResponse;
+  
+  // Update floating window if active
+  if (floatingWindow && !floatingWindow.closed) {
+    floatingWindow.document.getElementById('floating-transcript').innerHTML += aiResponse;
+  }
+  
+  document.getElementById('status').textContent = 'Fallback response provided';
 }
 
 // Improve the screen capture function for better audio handling
@@ -493,3 +540,29 @@ function stopScreenCapture() {
     document.getElementById('status').textContent = 'Screen capture stopped';
   }
 }
+
+// Add this function to help debug
+function debugAPICall() {
+  const apiKey = 'AIzaSyDwaIDizAt1mWFV1EP_Vu1SRFYm-w6JBkc';
+  const testUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+  
+  fetch(testUrl)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`API test failed: ${response.status} ${response.statusText}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log("API Test Success:", data);
+      document.getElementById('status').textContent = 'API connection successful';
+    })
+    .catch(error => {
+      console.error("API Test Error:", error);
+      document.getElementById('status').textContent = `API test failed: ${error.message}`;
+    });
+}
+
+// Call this function to test API connectivity
+// Add a button in your HTML to trigger this:
+// <button id="testApiBtn">Test API Connection</button>

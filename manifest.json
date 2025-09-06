@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Audio Buzzer",
+  "name": "Buuzzr - Interview Assistant",
   "version": "1.0",
-  "description": "Captures audio from system, microphone, and screen sharing and displays it in a text box",
+  "description": "Master your interviews with AI-powered practice. Get personalized feedback and accelerate your career growth.",
   "oauth2": {
-    "client_id": "372772514971-mmr8hnilnp49t4jh73mn1jsbm0i84sfq.apps.googleusercontent.com",
+    "client_id": "390622326018-6l5lifrbdvg5skg0oah3mv5le33hpgpt.apps.googleusercontent.com",
     "scopes": ["https://www.googleapis.com/auth/userinfo.profile"]
   },
   "permissions": [

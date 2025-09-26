@@ -1,13 +1,10 @@
-// Application state
+ // Application state
 let currentScreen = 'login';
 let userData = null;
+let authToken = null;
 
-// Simulate user data
-const mockUserData = {
-  name: 'Raj',
-  balance: '$0.00',
-  plan: 'Starter Plan (40 triggers per interview)'
-};
+// Backend API base URL (local for development)
+const API_BASE = 'http://localhost:3000/api';
 
 document.addEventListener('DOMContentLoaded', function() {
   initializeApp();
@@ -31,20 +28,28 @@ async function checkAuthStatus() {
     });
 
     if (stored.authToken && stored.user) {
-      // Verify token is still valid
-      const token = await new Promise((resolve) => {
-        chrome.identity.getAuthToken({ interactive: false }, (token) => {
-          resolve(token && !chrome.runtime.lastError ? token : null);
-        });
-      });
+      authToken = stored.authToken;
+      userData = stored.user;
 
-      if (token === stored.authToken) {
-        userData = stored.user;
-        showScreen('dashboard');
-        return;
+      // Optional: Verify token with backend
+      try {
+        const response = await fetch(`${API_BASE}/auth/verify`, {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+        if (response.ok) {
+          showScreen('dashboard');
+          return;
+        }
+      } catch (err) {
+        console.log('Token verification failed, but using stored data');
       }
+
+      showScreen('dashboard');
+      return;
     }
-    
+
     // Show login screen if not authenticated
     showScreen('login');
   } catch (error) {
@@ -53,24 +58,85 @@ async function checkAuthStatus() {
   }
 }
 
+async function loadSessions() {
+  if (!authToken) return;
+
+  try {
+    const response = await fetch(`${API_BASE}/sessions`, {
+      headers: {
+        'Authorization': `Bearer ${authToken}`
+      }
+    });
+
+    if (!response.ok) {
+      console.error('Failed to load sessions');
+      return;
+    }
+
+    const sessions = await response.json();
+    displaySessions(sessions);
+  } catch (error) {
+    console.error('Error loading sessions:', error);
+  }
+}
+
+function displaySessions(sessions) {
+  const container = document.querySelector('.scheduled-interviews-section');
+  if (!container) return;
+
+  // Clear existing content except title
+  const title = container.querySelector('.section-title');
+  container.innerHTML = '';
+  if (title) container.appendChild(title);
+
+  if (sessions.length === 0) {
+    const noSessions = document.createElement('p');
+    noSessions.textContent = 'No sessions created yet. Click "Create New" to get started.';
+    noSessions.style.color = '#9ca3af';
+    noSessions.style.fontSize = '14px';
+    container.appendChild(noSessions);
+    return;
+  }
+
+  sessions.forEach(session => {
+    const sessionCard = document.createElement('div');
+    sessionCard.className = 'interview-card';
+    sessionCard.innerHTML = `
+      <h3 class="interview-title">${session.scenario}</h3>
+      <p class="interview-position">${session.position || 'Position not specified'} at ${session.company || 'Company not specified'}</p>
+      <p class="interview-time">${new Date(session.createdAt).toLocaleString()} (${session.meetingLanguage})</p>
+      <p style="color: #d1d5db; font-size: 12px;">URL: ${session.meetingUrl}</p>
+      ${session.liveCoding ? '<span class="premium-badge">Live Coding</span>' : ''}
+      ${session.aiInterview ? '<span class="premium-badge">AI Interview</span>' : ''}
+      <button class="start-btn" onclick="window.open('${session.meetingUrl}', '_blank')">
+        Open Meeting
+      </button>
+    `;
+    container.appendChild(sessionCard);
+  });
+}
+
 function setupEventListeners() {
   // Login screen
-  document.getElementById('login-btn').addEventListener('click', handleLogin);
+  document.getElementById('google-login-btn').addEventListener('click', handleGoogleLogin);
+  document.getElementById('website-login-btn').addEventListener('click', showLoginForm);
+  document.getElementById('form-back-btn').addEventListener('click', hideLoginForm);
+  document.getElementById('form-login-btn').addEventListener('click', handleWebsiteLogin);
   document.getElementById('signup-link').addEventListener('click', handleSignup);
-  
+
   // Dashboard screen
   document.getElementById('create-new-btn').addEventListener('click', showCreateForm);
-  
+
   // Logout buttons (both dashboard and form screens)
   const logoutButtons = document.querySelectorAll('.power-btn');
   logoutButtons.forEach(button => {
     button.addEventListener('click', handleLogout);
   });
-  
+
   // Form screen
   document.getElementById('back-btn').addEventListener('click', showDashboard);
   document.getElementById('save-btn').addEventListener('click', handleSave);
-  
+
   // Toggle switches
   setupToggleSwitches();
 }
@@ -88,13 +154,15 @@ function setupToggleSwitches() {
   });
 }
 
-async function handleLogin() {
+async function handleGoogleLogin() {
   try {
-    // Show loading state
-    showScreen('loading');
+    // Disable button during login
+    const googleBtn = document.getElementById('google-login-btn');
+    googleBtn.disabled = true;
+    googleBtn.textContent = 'Signing in...';
 
     // Use Chrome Identity API for Google OAuth
-    const token = await new Promise((resolve, reject) => {
+    const idToken = await new Promise((resolve, reject) => {
       chrome.identity.getAuthToken({ interactive: true }, (token) => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
@@ -104,45 +172,132 @@ async function handleLogin() {
       });
     });
 
-    if (token) {
-      // Get user information from Google
-      const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      const userInfo = await response.json();
-      
-      // Store user data
-      userData = {
-        name: userInfo.name || userInfo.given_name || 'User',
-        email: userInfo.email,
-        balance: '$0.00',
-        plan: 'Starter Plan (40 triggers per interview)',
-        token: token
-      };
-      
-      // Store in chrome storage
-      chrome.storage.local.set({ 
-        authToken: token,
-        user: userData
-      });
-      
-      showScreen('dashboard');
+    if (!idToken) {
+      throw new Error('No token received');
     }
+
+    // Send to backend for verification and user creation
+    const response = await fetch(`${API_BASE}/auth/google`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ idToken })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.msg || 'Google login failed');
+    }
+
+    const { token, user } = await response.json();
+
+    // Store in chrome storage
+    authToken = token;
+    userData = {
+      ...user,
+      name: user.fullName, // Map fullName to name for consistency
+      balance: '$0.00',
+      plan: 'Starter Plan (40 triggers per interview)'
+    };
+
+    chrome.storage.local.set({ 
+      authToken,
+      user: userData
+    });
+
+    showScreen('dashboard');
   } catch (error) {
-    console.error('Login failed:', error);
+    console.error('Google login failed:', error);
     
-    // Show login screen again
-    showScreen('login');
+    // Re-enable button
+    const googleBtn = document.getElementById('google-login-btn');
+    googleBtn.disabled = false;
+    googleBtn.textContent = 'Continue with Google';
     
     // Show error message
-    alert('Login failed. Please try again.');
+    alert(`Google login failed: ${error.message}. Please try again.`);
   }
 }
 
 function handleSignup() {
   // Open signup page in new tab
-  chrome.tabs.create({ url: 'https://Buzzer/signup' });
+  chrome.tabs.create({ url: 'https://buzzer-nu.vercel.app/signup' });
+}
+
+function showLoginForm() {
+  document.querySelector('.login-options').style.display = 'none';
+  document.getElementById('login-form').style.display = 'flex';
+}
+
+function hideLoginForm() {
+  document.getElementById('login-form').style.display = 'none';
+  document.querySelector('.login-options').style.display = 'flex';
+}
+
+async function handleWebsiteLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+
+  if (!email || !password) {
+    alert('Please enter both email and password.');
+    return;
+  }
+
+  try {
+    // Disable button during login
+    const loginBtn = document.getElementById('form-login-btn');
+    loginBtn.disabled = true;
+    loginBtn.textContent = 'Signing in...';
+
+    // Send to backend
+    const response = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.msg || 'Login failed');
+    }
+
+    const { token, user } = await response.json();
+
+    // Store in chrome storage
+    authToken = token;
+    userData = {
+      ...user,
+      name: user.fullName, // Map fullName to name for consistency
+      balance: '$0.00',
+      plan: 'Starter Plan (40 triggers per interview)'
+    };
+
+    chrome.storage.local.set({ 
+      authToken,
+      user: userData
+    });
+
+    // Clear form
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+
+    // Hide form and show options
+    hideLoginForm();
+
+    showScreen('dashboard');
+  } catch (error) {
+    console.error('Website login failed:', error);
+    
+    // Re-enable button
+    const loginBtn = document.getElementById('form-login-btn');
+    loginBtn.disabled = false;
+    loginBtn.textContent = 'Login';
+
+    alert(`Login failed: ${error.message}. If no account, register first.`);
+  }
 }
 
 function showCreateForm() {
@@ -156,24 +311,9 @@ function showDashboard() {
 async function handleLogout() {
   console.log('Logout button clicked');
   try {
-    // Get stored token
-    const stored = await new Promise((resolve) => {
-      chrome.storage.local.get(['authToken'], (result) => {
-        resolve(result);
-      });
-    });
-
-    console.log('Stored token:', stored.authToken);
-
-    if (stored.authToken) {
-      // Revoke token
-      chrome.identity.removeCachedAuthToken({ token: stored.authToken });
-      
-      // Clear storage
-      chrome.storage.local.remove(['authToken', 'user']);
-      console.log('Token revoked and storage cleared');
-    }
-    
+    // Clear storage
+    chrome.storage.local.remove(['authToken', 'user']);
+    authToken = null;
     userData = null;
     showScreen('login');
     console.log('Logged out successfully');
@@ -184,7 +324,13 @@ async function handleLogout() {
   }
 }
 
-function handleSave() {
+async function handleSave() {
+  if (!authToken) {
+    alert('Please login first.');
+    showScreen('login');
+    return;
+  }
+
   // Get form data
   const formData = {
     scenario: document.getElementById('scenario-select').value,
@@ -198,13 +344,47 @@ function handleSave() {
     translationLanguage: document.getElementById('translation-language').value,
     resume: document.getElementById('resume').value
   };
-  
-  // Store form data
-  chrome.storage.local.set({ interviewSettings: formData });
-  
-  // Show success message and return to dashboard
-  alert('Interview settings saved successfully!');
-  showScreen('dashboard');
+
+  if (!formData.scenario || !formData.meetingUrl) {
+    alert('Please fill scenario and meeting URL.');
+    return;
+  }
+
+  try {
+    // Disable button
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    // Send to backend
+    const response = await fetch(`${API_BASE}/sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify(formData)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.msg || 'Save failed');
+    }
+
+    const session = await response.json();
+
+    // Show success
+    alert('Interview settings saved successfully!');
+    showScreen('dashboard');
+  } catch (error) {
+    console.error('Save failed:', error);
+    alert(`Save failed: ${error.message}. Please check if backend is running.`);
+  } finally {
+    // Re-enable button
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Save';
+  }
 }
 
 function showScreen(screenName) {
@@ -217,11 +397,21 @@ function showScreen(screenName) {
   switch(screenName) {
     case 'login':
       document.getElementById('login-screen').style.display = 'flex';
+      // Reset login form state
+      document.querySelector('.login-options').style.display = 'flex';
+      document.getElementById('login-form').style.display = 'none';
+      // Clear form fields
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+      // Reset button states
+      document.getElementById('google-login-btn').disabled = false;
+      document.getElementById('google-login-btn').textContent = 'Continue with Google';
       currentScreen = 'login';
       break;
     case 'dashboard':
       document.getElementById('dashboard-screen').style.display = 'block';
       updateDashboardUI();
+      loadSessions();
       currentScreen = 'dashboard';
       break;
     case 'form':

@@ -103,6 +103,13 @@
       line-height: 1.5;
     }
 
+    .login-options {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
     .login-button {
       background: #f97316;
       color: white;
@@ -114,13 +121,62 @@
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
-      margin-bottom: 40px;
     }
 
     .login-button:hover {
       background: #ea580c;
       transform: translateY(-1px);
       box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+    }
+
+    .login-form {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .login-form input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .login-form input:focus {
+      border-color: #f97316;
+    }
+
+    .login-form-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-back {
+      background: transparent;
+      color: #6b7280;
+      border: 1px solid #d1d5db;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-login {
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .btn-login:hover {
+      background: #ea580c;
     }
 
     .signup-link {
@@ -542,9 +598,21 @@
         <h1 class="welcome-title">Welcome</h1>
         <p class="welcome-subtitle">to the world's leading stealth AI copilot for your online meetings!</p>
       </div>
-      
-      <button class="login-button" id="login-btn">Login by Website</button>
-      
+
+      <div class="login-options">
+        <button class="login-button google-btn" id="google-login-btn">Continue with Google</button>
+        <button class="login-button website-btn" id="website-login-btn">Login by Website</button>
+      </div>
+
+      <div class="login-form" id="login-form">
+        <input type="email" placeholder="Email" id="login-email">
+        <input type="password" placeholder="Password" id="login-password">
+        <div class="login-form-actions">
+          <button class="btn-back" id="form-back-btn">Back</button>
+          <button class="btn-login" id="form-login-btn">Login</button>
+        </div>
+      </div>
+
       <div class="signup-link">
         Do not have an account? <a href="#" id="signup-link">Sign up</a>
       </div>
@@ -601,18 +669,9 @@
         
         <div class="main-content">
           <button class="create-new-btn" id="create-new-btn">+ Create New</button>
-          
-          <div class="interview-card">
-            <h3 class="interview-title">Live Coding Interview</h3>
-            <p class="interview-position">Test Engineer at Capgemini</p>
-            <p class="interview-time">11:30 AM, Sep 23 (English)</p>
-            <button class="start-btn">
-              Start
-            </button>
-          </div>
-          
+
           <div class="scheduled-interviews-section">
-            <p class="section-title">Scheduled interviews and saved list we can schedule our interview before start</p>
+            <p class="section-title">Your Interview Sessions</p>
           </div>
         </div>
       </div>

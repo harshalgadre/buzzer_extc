@@ -11,13 +11,12 @@
       padding: 0; 
     }
 
-    /* Sophisticated Dark Theme - Matching Buuzzr */
     body {
-      width: 400px;
-      min-height: 600px;
+      width: 500px;
+      height: 650px;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-      color: #f8fafc;
+      background: #ffffff;
+      color: #1f2937;
       -webkit-text-rendering: antialiased;
       text-rendering: antialiased;
       padding: 0;
@@ -25,815 +24,746 @@
       overflow: hidden;
     }
 
-    body::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: 
-        radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 60%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
-      pointer-events: none;
+    /* Login Screen */
+    .login-container { 
+      display: flex; 
+      height: 650px; 
+      background: #ffffff;
+      padding: 0;
     }
 
-    /* Sign-in Screen - Sophisticated Design */
-    .signin-container { 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      justify-content: center; 
-      min-height: 600px; 
-      padding: 48px 32px; 
+    .login-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 40px;
       text-align: center;
+      background: #ffffff;
+    }
+
+    .login-right {
+      flex: 1;
+      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       position: relative;
-      z-index: 1;
     }
 
-    .brand { 
-      margin-bottom: 48px;
-      position: relative;
+    .hero-image {
+      width: 80%;
+      height: 80%;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23f8fafc"/><circle cx="200" cy="150" r="40" fill="%23e2e8f0"/><rect x="160" y="200" width="80" height="100" rx="10" fill="%23ffffff"/><rect x="120" y="320" width="160" height="60" rx="8" fill="%23f97316"/></svg>') center/contain no-repeat;
     }
 
-    .brand::before {
-      content: '';
-      position: absolute;
-      top: -20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 80px;
-      height: 4px;
-      background: linear-gradient(90deg, #3b82f6, #8b5cf6, #10b981);
-      border-radius: 2px;
-    }
-    
-    .brand-name { 
-      font-size: 42px; 
-      font-weight: 800; 
-      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #10b981 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 12px;
-      letter-spacing: -2px;
-    }
-    
-    .brand-tagline { 
-      color: #94a3b8; 
-      font-size: 16px; 
-      font-weight: 500; 
-      text-transform: uppercase;
-      letter-spacing: 2px;
+    .ntro-logo {
+      display: flex;
+      align-items: center;
+      margin-bottom: 80px;
     }
 
-    .hero-title { 
-      font-size: 24px; 
-      font-weight: 700; 
-      color: #f8fafc; 
-      margin-bottom: 12px;
-      line-height: 1.2;
-    }
-    
-    .hero-subtitle { 
-      color: #cbd5e1; 
-      font-size: 16px; 
-      line-height: 1.6;
-      max-width: 320px; 
-      margin-bottom: 40px;
-      font-weight: 400;
+    .ntro-icon {
+      font-size: 48px;
+      font-weight: 800;
+      color: #f97316;
+      margin-right: 12px;
+      transform: rotate(-15deg);
     }
 
-    /* Sophisticated Sign-in Button */
-    .signin-btn { 
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-      color: white; 
-      border: none; 
-      padding: 16px 32px; 
-      border-radius: 12px; 
-      font-weight: 600; 
+    .ntro-text {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .ntro-version {
+      font-size: 14px;
+      color: #6b7280;
+      margin-top: 4px;
+      display: block;
+    }
+
+    .welcome-section {
+      margin-bottom: 60px;
+    }
+
+    .welcome-title {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 16px;
+    }
+
+    .welcome-subtitle {
       font-size: 16px;
-      display: flex; 
-      align-items: center; 
-      gap: 12px; 
-      cursor: pointer; 
+      color: #6b7280;
+      max-width: 300px;
+      line-height: 1.5;
+    }
+
+    .login-button {
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 16px 48px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
       transition: all 0.3s ease;
-      box-shadow: 
-        0 4px 12px rgba(59, 130, 246, 0.3),
-        0 2px 4px rgba(0, 0, 0, 0.1);
-      position: relative;
-      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+      margin-bottom: 40px;
     }
 
-    .signin-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transition: left 0.6s;
+    .login-button:hover {
+      background: #ea580c;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
     }
 
-    .signin-btn:hover::before {
-      left: 100%;
-    }
-    
-    .signin-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 
-        0 8px 25px rgba(59, 130, 246, 0.4),
-        0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-    
-    .google-icon { 
-      width: 20px; 
-      height: 20px; 
+    .signup-link {
+      color: #6b7280;
+      font-size: 14px;
     }
 
-    /* Main App - Sophisticated Dark Design */
-    .main-container { 
-      display: none; 
-      background: transparent;
-      min-height: 600px;
-      padding: 24px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .header { 
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(59, 130, 246, 0.1);
-      border-radius: 16px;
-      padding: 20px; 
-      margin-bottom: 24px;
-      box-shadow: 
-        0 4px 20px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-    
-    .user-info { 
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between; 
-      margin-bottom: 20px;
-    }
-
-    .user-profile { 
-      display: flex; 
-      align-items: center; 
-      gap: 14px; 
-    }
-    
-    .user-avatar { 
-      width: 42px; 
-      height: 42px; 
-      border-radius: 12px; 
-      object-fit: cover;
-      border: 2px solid rgba(59, 130, 246, 0.3);
-    }
-    
-    .user-details h3 { 
-      font-size: 16px; 
-      color: #f8fafc; 
-      margin-bottom: 4px; 
+    .signup-link a {
+      color: #f97316;
+      text-decoration: none;
       font-weight: 600;
     }
-    
-    .user-details p { 
-      font-size: 14px; 
-      color: #94a3b8; 
+
+    .signup-link a:hover {
+      text-decoration: underline;
     }
 
-    .logout-btn { 
-      background: rgba(239, 68, 68, 0.1); 
-      color: #f87171; 
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      padding: 8px 16px; 
-      border-radius: 8px; 
-      font-weight: 500; 
-      cursor: pointer; 
-      font-size: 14px;
-      transition: all 0.2s ease;
-    }
-
-    .logout-btn:hover {
-      background: rgba(239, 68, 68, 0.2);
-      border-color: rgba(239, 68, 68, 0.3);
-    }
-
-    .main-title {
-      font-size: 28px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #10b981 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 6px;
-      letter-spacing: -1px;
-    }
-
-    .main-subtitle {
-      font-size: 16px;
-      color: #94a3b8;
-      font-weight: 500;
-    }
-
-    /* Controls - Sophisticated Grid */
-    .controls { 
-      display: grid; 
-      grid-template-columns: repeat(2, 1fr); 
-      gap: 12px; 
-      margin-bottom: 24px;
-    }
-    
-    .btn { 
-      background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
-      color: white; 
-      border: none; 
-      padding: 14px 18px; 
-      border-radius: 12px; 
-      font-weight: 600; 
-      cursor: pointer; 
-      font-size: 14px;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 
-        0 2px 8px rgba(59, 130, 246, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-
-    .btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-      transition: left 0.5s;
-    }
-
-    .btn:hover::before {
-      left: 100%;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 
-        0 4px 15px rgba(59, 130, 246, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    }
-    
-    .btn.stop { 
-      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-      box-shadow: 
-        0 2px 8px rgba(220, 38, 38, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-
-    .btn.stop:hover {
-      box-shadow: 
-        0 4px 15px rgba(220, 38, 38, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    }
-
-    /* Status - Sophisticated */
-    .status { 
-      background: rgba(16, 185, 129, 0.1); 
-      border: 1px solid rgba(16, 185, 129, 0.2); 
-      color: #34d399; 
-      padding: 14px 18px; 
-      border-radius: 12px; 
-      text-align: center; 
-      font-weight: 600; 
-      font-size: 14px;
-      margin-bottom: 24px;
-      backdrop-filter: blur(10px);
-    }
-
-    .status.error {
-      background: rgba(239, 68, 68, 0.1);
-      border-color: rgba(239, 68, 68, 0.2);
-      color: #f87171;
-    }
-
-    .status.loading {
-      background: rgba(59, 130, 246, 0.1);
-      border-color: rgba(59, 130, 246, 0.2);
-      color: #60a5fa;
-    }
-
-    .content { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 24px; 
-    }
-
-    /* Transcript Container - Sophisticated */
-    .transcript-container { 
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(59, 130, 246, 0.1);
-      border-radius: 16px; 
-      padding: 24px; 
-      box-shadow: 
-        0 4px 20px rgba(0, 0, 0, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-    
-    .transcript-title { 
-      color: #f8fafc; 
-      font-weight: 700; 
-      font-size: 18px; 
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    
-    .transcript { 
-      color: #e2e8f0; 
-      font-size: 15px; 
-      line-height: 1.7;
-      max-height: 280px; 
-      overflow-y: auto; 
-      padding: 20px;
-      background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(59, 130, 246, 0.1);
-      border-radius: 12px;
-      backdrop-filter: blur(10px);
-    }
-
-    .transcript::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    .transcript::-webkit-scrollbar-track {
-      background: rgba(15, 23, 42, 0.5);
-      border-radius: 3px;
-    }
-
-    .transcript::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      border-radius: 3px;
-    }
-
-    .transcript::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(135deg, #2563eb, #7c3aed);
-    }
-
-    /* Question and Answer - Compact Sexy Design */
-    .qa-item {
-      margin-bottom: 20px;
+    /* After Login Screen */
+    .dashboard-container {
+      display: none;
+      height: 650px;
+      background: #5b4a80;
+      color: white;
       padding: 0;
-      border: none;
-      position: relative;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 
-        0 8px 32px rgba(0, 0, 0, 0.3),
-        0 2px 8px rgba(59, 130, 246, 0.1);
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .qa-item:hover {
-      transform: translateY(-4px) scale(1.02);
-      box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.4),
-        0 8px 16px rgba(59, 130, 246, 0.2);
-    }
-
-    .qa-item:last-child {
-      margin-bottom: 0;
-    }
-
-    /* Vertical Layout for Q&A */
-    .qa-content {
+    .dashboard-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       display: flex;
-      flex-direction: column;
-      min-height: 120px;
-      background: linear-gradient(135deg, 
-        rgba(15, 23, 42, 0.95) 0%, 
-        rgba(30, 41, 59, 0.9) 50%, 
-        rgba(51, 65, 85, 0.85) 100%);
-      backdrop-filter: blur(20px);
-      position: relative;
-      overflow: hidden;
-      border-radius: 20px;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .qa-content::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: 
-        radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
-      pointer-events: none;
-    }
-
-    .question {
-      width: 100%;
-      background: linear-gradient(135deg, 
-        rgba(59, 130, 246, 0.2) 0%, 
-        rgba(99, 102, 241, 0.15) 50%, 
-        rgba(37, 99, 235, 0.1) 100%);
-      padding: 20px;
-      margin: 0;
-      border-radius: 0 0 20px 20px;
-      border: none;
-      border-top: 1px solid rgba(59, 130, 246, 0.3);
-      position: relative;
-      backdrop-filter: none;
-      box-shadow: none;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .question::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      top: 0;
-      width: 6px;
-      background: linear-gradient(180deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-    }
-
-    .question::after {
-      content: 'Q';
-      position: absolute;
-      bottom: 8px;
-      right: 12px;
-      font-size: 11px;
-      font-weight: 800;
-      color: #60a5fa;
-      background: rgba(59, 130, 246, 0.15);
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
+    .user-info {
       display: flex;
       align-items: center;
-      justify-content: center;
-      border: 1.5px solid rgba(59, 130, 246, 0.4);
-      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+      gap: 12px;
     }
 
-    .answer {
-      width: 100%;
-      background: linear-gradient(135deg, 
-        rgba(16, 185, 129, 0.25) 0%, 
-        rgba(34, 197, 94, 0.18) 50%, 
-        rgba(5, 150, 105, 0.12) 100%);
-      padding: 20px;
-      margin: 0;
-      border-radius: 20px 20px 0 0;
-      border: none;
-      position: relative;
-      backdrop-filter: none;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      overflow: hidden;
+    .user-name {
+      font-weight: 600;
+      color: white;
     }
 
-    .answer::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      width: 6px;
-      background: linear-gradient(180deg, #10b981 0%, #22c55e 50%, #34d399 100%);
-      box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
-    }
-
-    .answer::after {
-      content: 'AI';
-      position: absolute;
-      top: 8px;
-      right: 12px;
-      font-size: 10px;
-      font-weight: 800;
-      color: #34d399;
-      background: rgba(16, 185, 129, 0.15);
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1.5px solid rgba(16, 185, 129, 0.4);
-      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
-    }
-
-    .question-label, .answer-label {
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-      margin-bottom: 8px;
-      opacity: 0.8;
+    .user-balance {
       display: flex;
       align-items: center;
       gap: 6px;
-    }
-
-    .question-label {
-      color: #60a5fa;
-    }
-
-    .answer-label {
-      color: #34d399;
-    }
-
-    .question-text {
       font-size: 14px;
-      color: #f8fafc;
-      font-weight: 600;
-      line-height: 1.5;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-      letter-spacing: 0.2px;
+      color: #fbbf24;
     }
 
-    .answer-text {
-      font-size: 13px;
-      color: #f1f5f9;
-      line-height: 1.6;
+    .coin-icon {
+      width: 16px;
+      height: 16px;
+      background: #fbbf24;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .user-plan {
+      color: #10b981;
+      font-size: 12px;
+      background: rgba(16, 185, 129, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-top: 4px;
+    }
+
+    .power-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .power-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .dashboard-sidebar {
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.15);
+      height: calc(650px - 80px);
+    }
+
+    .sidebar-nav {
+      list-style: none;
+    }
+
+    .sidebar-nav li {
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .sidebar-nav li:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-nav li.active {
+      background: rgba(249, 115, 22, 0.2);
+      color: #f97316;
+    }
+
+    .nav-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 12px;
+      background: currentColor;
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+
+    .nav-text {
       font-weight: 500;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-      letter-spacing: 0.1px;
+    }
+
+    .nav-subtitle {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+
+    .dashboard-main {
+      padding: 24px;
+      flex: 1;
+    }
+
+    .interview-card {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .interview-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .interview-position {
+      color: #d1d5db;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .interview-time {
+      color: #9ca3af;
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+
+    .start-btn {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s;
+    }
+
+    .start-btn:hover {
+      transform: translateX(4px);
+    }
+
+    .create-new-btn {
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      font-size: 14px;
+    }
+
+    .create-new-btn:hover {
+      background: #ea580c;
+    }
+
+    .scheduled-interviews-section {
+      margin-top: 24px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding: 0 24px;
+    }
+
+    /* Create Form Screen */
+    .form-container {
+      display: none;
+      height: 650px;
+      background: #5b4a80;
+      color: white;
+      padding: 0;
+      overflow-y: auto;
+    }
+
+    .form-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-content {
+      flex: 1;
+      padding: 24px;
+      max-height: 520px;
+      overflow-y: auto;
       position: relative;
     }
 
-    /* Fallback and Error Variants */
-    .qa-item.fallback .answer {
-      background: linear-gradient(135deg, 
-        rgba(245, 158, 11, 0.2) 0%, 
-        rgba(217, 119, 6, 0.15) 50%, 
-        rgba(180, 83, 9, 0.1) 100%);
+    .form-group {
+      margin-bottom: 20px;
     }
 
-    .qa-item.fallback .answer::before {
-      background: linear-gradient(180deg, #f59e0b 0%, #d97706 50%, #fbbf24 100%);
-      box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
-      left: 0;
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 8px;
+      font-size: 14px;
     }
 
-    .qa-item.fallback .answer-label {
-      color: #fbbf24;
-    }
-
-    .qa-item.fallback .answer::after {
-      content: '💡';
-    }
-
-    .qa-item.error .answer {
-      background: linear-gradient(135deg, 
-        rgba(239, 68, 68, 0.2) 0%, 
-        rgba(220, 38, 38, 0.15) 50%, 
-        rgba(185, 28, 28, 0.1) 100%);
-    }
-
-    .qa-item.error .answer::before {
-      background: linear-gradient(180deg, #ef4444 0%, #dc2626 50%, #f87171 100%);
-      box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
-      left: 0;
-    }
-
-    .qa-item.error .answer-label {
-      color: #f87171;
-    }
-
-    .qa-item.error .answer::after {
-      content: '⚠️';
-    }
-
-    .qa-item.error .answer-text {
-      color: #fecaca;
-    }
-
-    /* Expand Button for Long Content */
-    .expand-btn {
-      position: absolute;
-      bottom: 8px;
-      right: 12px;
-      background: rgba(0, 0, 0, 0.5);
+    .form-input, .form-select, .form-textarea {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
       color: white;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 10px;
-      font-weight: 600;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .form-select {
       cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: all 0.2s ease;
-      display: none;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 12px center;
+      background-repeat: no-repeat;
+      background-size: 16px;
+      padding-right: 40px;
+      appearance: none;
     }
 
-    .expand-btn:hover {
-      background: rgba(0, 0, 0, 0.7);
-      transform: scale(1.05);
+    .form-select option {
+      background: #5b4a80;
+      color: white;
+      padding: 8px;
     }
 
-    .qa-item.expanded .question-text,
-    .qa-item.expanded .answer-text {
-      -webkit-line-clamp: unset;
-      line-clamp: unset;
-      overflow: visible;
-      display: block;
+    .form-input::placeholder, .form-textarea::placeholder {
+      color: rgba(255, 255, 255, 0.5);
     }
 
-    .qa-item.expanded .expand-btn {
-      display: block;
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
     }
 
-    /* Enhanced text formatting */
-    .answer-text strong {
-      color: #fbbf24;
-      font-weight: 700;
-      text-shadow: 0 0 4px rgba(251, 191, 36, 0.3);
+    .form-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
     }
 
-    .answer-text em {
-      color: #a78bfa;
-      font-style: normal;
-      font-weight: 600;
-      text-shadow: 0 0 4px rgba(167, 139, 250, 0.3);
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background 0.3s;
     }
 
-    .answer-text code {
-      background: rgba(0, 0, 0, 0.4);
-      color: #fbbf24;
+    .toggle-switch.active {
+      background: #10b981;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.3s;
+    }
+
+    .toggle-switch.active .toggle-slider {
+      transform: translateX(20px);
+    }
+
+    .premium-badge {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: white;
+      font-size: 10px;
       padding: 2px 6px;
       border-radius: 4px;
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-      font-size: 11px;
-      border: 1px solid rgba(251, 191, 36, 0.3);
-      box-shadow: 0 0 8px rgba(251, 191, 36, 0.2);
+      font-weight: 600;
+      margin-left: 8px;
     }
 
-    /* Compact transcript container */
-    .transcript { 
-      max-height: 320px;
-      overflow-y: auto;
-      padding: 16px;
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      padding: 20px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .btn-primary {
+      background: #f97316;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .btn-primary:hover {
+      background: #ea580c;
+    }
+
+    .hidden {
+      display: none !important; 
+    }
+
+    .form-content::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .form-content::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+
+    .form-content::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    .dashboard-layout {
+      display: flex;
+      flex-direction: column;
+      height: 650px;
+    }
+
+    .dashboard-body {
+      display: flex;
+      flex: 1;
+    }
+
+    .sidebar {
+      width: 160px;
       background: rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(59, 130, 246, 0.1);
-      border-radius: 12px;
-      backdrop-filter: blur(10px);
+      padding: 24px 16px;
     }
 
-    /* Live text styling - Compact */
-    #live-text {
-      color: #94a3b8;
-      font-style: italic;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 16px;
-      text-align: center;
-      border: 2px dashed rgba(148, 163, 184, 0.2);
-      border-radius: 12px;
-      background: rgba(148, 163, 184, 0.02);
-      letter-spacing: 0.5px;
-      transition: all 0.3s ease;
-      margin-top: 12px;
-    }
-
-    #live-text:not(:empty) {
-      color: #e2e8f0;
-      border-color: rgba(59, 130, 246, 0.3);
-      background: rgba(59, 130, 246, 0.05);
-      font-style: normal;
-      text-align: left;
-    }
-
-    /* Loading animation - Sophisticated */
-    .loading {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(59, 130, 246, 0.2);
-      border-top: 2px solid #3b82f6;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-right: 8px;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    /* Focus styles for accessibility */
-    .signin-btn:focus,
-    .btn:focus,
-    .logout-btn:focus {
-      outline: 2px solid #3b82f6;
-      outline-offset: 2px;
-    }
-
-    /* Subtle animations */
-    .qa-item {
-      animation: slideIn 0.3s ease-out;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .main-content {
+      flex: 1;
+      padding: 24px;
+      position: relative;
     }
   </style>
 </head>
 <body>
-  <!-- Sign In Screen -->
-  <div id="signin-container" class="signin-container">
-    <div class="brand">
-      <div class="brand-name">Buuzzr</div>
-      <div class="brand-tagline">Interview Assistant</div>
+  <!-- Login Screen -->
+  <div class="login-container" id="login-screen">
+    <div class="login-left">
+      <div class="ntro-logo">
+        <div class="ntro-icon">N</div>
+        <div>
+          <div class="ntro-text">Buzzer</div>
+          <span class="ntro-version">4.7.1</span>
+        </div>
+      </div>
+      
+      <div class="welcome-section">
+        <h1 class="welcome-title">Welcome</h1>
+        <p class="welcome-subtitle">to the world's leading stealth AI copilot for your online meetings!</p>
+      </div>
+      
+      <button class="login-button" id="login-btn">Login by Website</button>
+      
+      <div class="signup-link">
+        Do not have an account? <a href="#" id="signup-link">Sign up</a>
+      </div>
     </div>
-
-    <h1 class="hero-title">Start Your Interview Practice</h1>
-    <p class="hero-subtitle">Capture audio, get AI feedback, and improve your interview performance with our professional platform.</p>
-
-    <button id="signin-btn" class="signin-btn">
-      <svg class="google-icon" viewBox="0 0 24 24">
-        <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      Sign in with Google
-    </button>
+    
+    <div class="login-right">
+      <div class="hero-image"></div>
+    </div>
   </div>
 
-  <!-- Main Application -->
-  <div id="main-container" class="main-container">
-    <div class="header">
-      <div class="user-info">
-        <div class="user-profile">
-          <img id="user-avatar" class="user-avatar" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAiIGhlaWdodD0iNTAiIHZpZXdCb3g9IjAgMCA1MCA1MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjUiIGN5PSIyNSIgcj0iMjUiIGZpbGw9IiNFMkU4RjAiLz4KPHBhdGggZD0iTTI1IDI1QzI3Ljc2MTQgMjUgMzAgMjcuNzYxNCAzMCAyNUMzMCAyMi4yMzg2IDI3Ljc2MTQgMjAgMjUgMjBDMjUgMjIuMjM4NiAyMi43NjE0IDIwIDIyQzIwIDIyLjc2MTQgMjIuNzYxNCAyNSAyNVoiIGZpbGw9IiM2NDc0OEIiLz4KPHBhdGggZD0iTTM1IDMwQzM1IDI2LjY4NjMgMzIuNDI3MSAyNCAyOCAyNEgyMkMxNi41NzI5IDI0IDEzIDI2LjY4NjMgMTMgMzBWMzJIMzVWMzBaIiBmaWxsPSIjNjQ3NDhCIi8+Cjwvc3ZnPgo=" alt="User Avatar">
-          <div class="user-details">
-            <h3 id="user-name">Welcome back!</h3>
-            <p id="user-email"></p>
+  <!-- Dashboard Screen (After Login) -->
+  <div class="dashboard-container" id="dashboard-screen">
+    <div class="dashboard-layout">
+      <div class="dashboard-header">
+        <div class="user-info">
+          <div>
+            <div class="user-name" id="user-name">User</div>
+            <div class="user-balance">
+              <span class="coin-icon"></span>
+              <span id="user-balance">$0.00</span>
+            </div>
+            <div class="user-plan">Starter Plan (40 triggers per interview)</div>
           </div>
         </div>
-        <button id="logout-btn" class="logout-btn">Logout</button>
+        <button class="power-btn" id="power-btn">Logout</button>
       </div>
-      <h1 class="main-title">Buuzzr</h1>
-      <p class="main-subtitle">Interview Platform</p>
+      
+      <div class="dashboard-body">
+        <div class="sidebar">
+          <ul class="sidebar-nav">
+            <li class="active">
+              <div class="nav-icon"></div>
+              <div>
+                <div class="nav-text">Before the Meeting</div>
+                <div class="nav-subtitle">Schedule and plan your meeting.</div>
+              </div>
+            </li>
+            <li>
+              <div class="nav-icon"></div>
+              <div>
+                <div class="nav-text">In the Meeting</div>
+                <div class="nav-subtitle">Connect Buzzer to the meeting and go!</div>
+              </div>
+            </li>
+            <li>
+              <div class="nav-icon"></div>
+              <div>
+                <div class="nav-text">After the Meeting</div>
+                <div class="nav-subtitle">Rate us and learn from AI feedback.</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="main-content">
+          <button class="create-new-btn" id="create-new-btn">+ Create New</button>
+          
+          <div class="interview-card">
+            <h3 class="interview-title">Live Coding Interview</h3>
+            <p class="interview-position">Test Engineer at Capgemini</p>
+            <p class="interview-time">11:30 AM, Sep 23 (English)</p>
+            <button class="start-btn">
+              Start
+            </button>
+          </div>
+          
+          <div class="scheduled-interviews-section">
+            <p class="section-title">Scheduled interviews and saved list we can schedule our interview before start</p>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div class="content">
-      <div class="controls">
-        <button id="microphone-btn" class="btn">
-           Microphone
-        </button>
-        <button id="screen-share-btn" class="btn">
-          Screen Share
-        </button>
-        <button id="floating-btn" class="btn">
-          Floating
-        </button>
-        <button id="stop-btn" class="btn stop">
-          Stop All
-        </button>
+  <!-- Create Form Screen -->
+  <div class="form-container" id="form-screen">
+    <div class="dashboard-layout">
+      <div class="dashboard-header">
+        <div class="user-info">
+          <div>
+            <div class="user-name" id="user-name-form">User</div>
+            <div class="user-balance">
+              <span class="coin-icon"></span>
+              <span>$0.00</span>
+            </div>
+            <div class="user-plan">Starter Plan (40 triggers per interview)</div>
+          </div>
+        </div>
+        <button class="power-btn">Logout</button>
       </div>
-
-      <div class="status" id="status">Ready to capture audio</div>
-
-      <div class="transcript-container">
-        <h3 class="transcript-title">Live Transcript</h3>
-        <div class="transcript" id="transcript">
-          <div class="qa-item" style="display: none;" id="qa-template">
-            <div class="qa-content">
-              <div class="answer">
-                <div class="answer-label">Answer</div>
-                <div class="answer-text"></div>
+      
+      <div class="dashboard-body">
+        <div class="sidebar">
+          <ul class="sidebar-nav">
+            <li class="active">
+              <div class="nav-icon"></div>
+              <div>
+                <div class="nav-text">Before the Meeting</div>
+                <div class="nav-subtitle">Schedule and plan your meeting.</div>
               </div>
-              <div class="question">
-                <div class="question-label">Question</div>
-                <div class="question-text"></div>
+            </li>
+            <li>
+              <div class="nav-icon"></div>
+              <div>
+                <div class="nav-text">In the Meeting</div>
+                <div class="nav-subtitle">Connect Buzzer to the meeting and go!</div>
               </div>
+            </li>
+            <li>
+              <div class="nav-icon"></div>
+              <div>
+                <div class="nav-text">After the Meeting</div>
+                <div class="nav-subtitle">Rate us and learn from AI feedback.</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="form-content">
+          <div class="form-group">
+            <label class="form-label">Scenario</label>
+            <select class="form-select" id="scenario-select">
+              <option value="job-interview">Job Interview</option>
+              <option value="hr-interview">HR Interview</option>
+              <option value="team-meeting">Team Meeting</option>
+              <option value="client-meeting">Client Meeting</option>
+              <option value="consulting">Consulting</option>
+              <option value="casual-conversation">Casual Conversation</option>
+              <option value="online-assessment">Online Assessment</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Meeting URL</label>
+            <input type="text" class="form-input" placeholder="The scheduled meeting page link" id="meeting-url">
+            <small style="color: #f97316; font-size: 12px;">Use this page</small>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Is Desktop Call</label>
+            <div class="form-toggle">
+              <div class="toggle-switch" id="desktop-toggle">
+                <div class="toggle-slider"></div>
+              </div>
+              <span>Is meeting by desktop, not a web browser?</span>
             </div>
           </div>
-          <div id="live-text">Start speaking to see transcription here...</div>
+          
+          <div class="form-group">
+            <label class="form-label">Live Coding <span class="premium-badge">PREMIUM</span></label>
+            <div class="form-toggle">
+              <div class="toggle-switch" id="live-coding-toggle">
+                <div class="toggle-slider"></div>
+              </div>
+              <span>Will be required to share screen for coding?</span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">AI Interview <span class="premium-badge">PREMIUM</span></label>
+            <div class="form-toggle">
+              <div class="toggle-switch" id="ai-interview-toggle">
+                <div class="toggle-slider"></div>
+              </div>
+              <span>Is the interviewer not human?</span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Position</label>
+            <input type="text" class="form-input" placeholder="e.g. Senior UI/UX Designer" id="position">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Company</label>
+            <input type="text" class="form-input" placeholder="e.g. Google" id="company">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Meeting Language</label>
+            <select class="form-select" id="meeting-language">
+              <option value="english">English</option>
+              <option value="spanish">Spanish</option>
+              <option value="french">French</option>
+              <option value="german">German</option>
+              <option value="italian">Italian</option>
+              <option value="portuguese">Portuguese</option>
+              <option value="russian">Russian</option>
+              <option value="chinese">Chinese</option>
+              <option value="japanese">Japanese</option>
+              <option value="korean">Korean</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Translation Language</label>
+            <select class="form-select" id="translation-language">
+              <option value="english">English</option>
+              <option value="spanish">Spanish</option>
+              <option value="french">French</option>
+              <option value="german">German</option>
+              <option value="italian">Italian</option>
+              <option value="portuguese">Portuguese</option>
+              <option value="russian">Russian</option>
+              <option value="chinese">Chinese</option>
+              <option value="japanese">Japanese</option>
+              <option value="korean">Korean</option>
+            </select>
+          </div>
+      
+          <div class="form-group">
+            <label class="form-label">Resume <span class="premium-badge">PREMIUM</span></label>
+            <textarea class="form-textarea" placeholder="Input your resume if you want more tailored hint to your professional experience." id="resume"></textarea>
+          </div>
+          
+          <div class="form-actions">
+            <button class="btn-secondary" id="back-btn">Back</button>
+            <button class="btn-primary" id="save-btn">Save</button>
+          </div>
         </div>
       </div>
     </div>

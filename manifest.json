@@ -5,7 +5,10 @@
   "description": "Master your interviews with AI-powered practice. Get personalized feedback and accelerate your career growth.",
   "oauth2": {
     "client_id": "390622326018-6l5lifrbdvg5skg0oah3mv5le33hpgpt.apps.googleusercontent.com",
-    "scopes": ["https://www.googleapis.com/auth/userinfo.profile"]
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/userinfo.email"
+    ]
   },
   "permissions": [
     "identity",

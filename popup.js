@@ -108,11 +108,32 @@ function displaySessions(sessions) {
       <p style="color: #d1d5db; font-size: 12px;">URL: ${session.meetingUrl}</p>
       ${session.liveCoding ? '<span class="premium-badge">Live Coding</span>' : ''}
       ${session.aiInterview ? '<span class="premium-badge">AI Interview</span>' : ''}
-      <button class="start-btn" onclick="window.open('${session.meetingUrl}', '_blank')">
-        Open Meeting
-      </button>
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button class="start-btn open-meeting-btn" data-url="${session.meetingUrl}" style="flex: 1;">
+          Open Meeting
+        </button>
+        <button class="start-btn start-ai-btn" data-session-id="${session._id}" data-meeting-url="${session.meetingUrl}" style="background: linear-gradient(135deg, #10b981, #059669); flex: 1;">
+          Start AI Helper
+        </button>
+      </div>
     `;
     container.appendChild(sessionCard);
+  });
+
+  // Add event listeners
+  document.querySelectorAll('.open-meeting-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const url = e.target.getAttribute('data-url');
+      window.open(url, '_blank');
+    });
+  });
+
+  document.querySelectorAll('.start-ai-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const sessionId = e.target.getAttribute('data-session-id');
+      const meetingUrl = e.target.getAttribute('data-meeting-url');
+      startAIHelper(sessionId, meetingUrl);
+    });
   });
 }
 
@@ -429,5 +450,39 @@ function updateDashboardUI() {
     
     userNameElements.forEach(el => el.textContent = userData.name);
     userBalanceElements.forEach(el => el.textContent = userData.balance);
+  }
+}
+
+async function startAIHelper(sessionId, meetingUrl) {
+  try {
+    // Open meeting in new tab
+    const createTabResult = await new Promise((resolve) => {
+      chrome.tabs.create({ url: meetingUrl, active: true }, resolve);
+    });
+    const tab = createTabResult;
+
+    // Store session ID and tab ID
+    await new Promise((resolve) => {
+      chrome.storage.local.set({ 
+        currentSessionId: sessionId, 
+        meetingTabId: tab.id 
+      }, resolve);
+    });
+
+    // Create smaller overlay window
+    await new Promise((resolve) => {
+      chrome.windows.create({
+        url: chrome.runtime.getURL('ai-helper.html'),
+        type: 'popup',
+        width: 800,
+        height: 600,
+        left: (window.screen.availWidth - 800) / 2,
+        top: (window.screen.availHeight - 600) / 2,
+        focused: true
+      }, resolve);
+    });
+  } catch (error) {
+    console.error('Failed to start AI Helper:', error);
+    alert('Failed to start AI Helper. Please check console for details.');
   }
 }

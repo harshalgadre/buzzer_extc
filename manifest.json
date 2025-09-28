@@ -12,8 +12,9 @@
   },
   "permissions": [
     "identity",
+    "activeTab",
     "tabCapture",
-    "audioCapture",
+    "microphone",
     "storage",
     "https://*.googleapis.com/*"
   ],

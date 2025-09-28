@@ -16,7 +16,15 @@
     "tabCapture",
     "microphone",
     "storage",
-    "https://*.googleapis.com/*"
+    "https://*.googleapis.com/*",
+    "scripting"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://meet.google.com/*", "https://zoom.us/*", "https://*.zoom.us/*", "https://teams.microsoft.com/*"],
+      "js": ["content-script.js"],
+      "run_at": "document_end"
+    }
   ],
   "host_permissions": [
     "https://generativelanguage.googleapis.com/*"

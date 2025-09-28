@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page for Chrome Extension</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .video-container {
+            width: 100%;
+            height: 400px;
+            background: #333;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .test-button {
+            background: #FF6A2B;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 15px 30px;
+            margin-top: 20px;
+        }
+        .test-button:hover {
+            background: #e55a23;
+        }
+        .info {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Interview Practice Session</h1>
+        
+        <div class="video-container">
+            <p style="font-size: 18px; color: #aaa;">📹 Video Conference Area</p>
+        </div>
+        
+        <div class="controls">
+            <button>🎤 Mute</button>
+            <button>📹 Video</button>
+            <button>💬 Chat</button>
+            <button>📤 Share</button>
+        </div>
+
+        <div style="text-align: center;">
+            <button class="test-button" onclick="testExtension()">
+                🤖 Test AI Helper Overlay
+            </button>
+        </div>
+
+        <div class="info">
+            <h3>📋 Test Instructions:</h3>
+            <ol>
+                <li>Load the Chrome extension in developer mode</li>
+                <li>Click the "Test AI Helper Overlay" button above</li>
+                <li>The floating overlay should appear over this page</li>
+                <li>The background should be visible through the semi-transparent overlay</li>
+                <li>Click outside the overlay or the X button to close it</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function testExtension() {
+            // This will trigger the content script if the extension is loaded
+            console.log('Testing Chrome Extension overlay...');
+            
+            // Send message to extension to trigger the overlay
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                chrome.runtime.sendMessage({
+                    action: 'trigger_ai_helper'
+                }, function(response) {
+                    console.log('Extension response:', response);
+                });
+            } else {
+                alert('Chrome extension not detected. Please load the extension first.');
+            }
+        }
+
+        // Simulate a meeting environment
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test page loaded - ready for extension testing');
+        });
+    </script>
+</body>
+</html>

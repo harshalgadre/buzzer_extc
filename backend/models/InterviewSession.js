@@ -43,6 +43,21 @@ const sessionSchema = new mongoose.Schema({
   resume: {
     type: String
   },
+  aiInteractions: [{
+    interviewerText: {
+      type: String
+    },
+    aiResponse: {
+      type: String
+    },
+    userText: {
+      type: String
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   createdAt: {
     type: Date,
     default: Date.now

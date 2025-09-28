@@ -455,32 +455,28 @@ function updateDashboardUI() {
 
 async function startAIHelper(sessionId, meetingUrl) {
   try {
-    // Open meeting in new tab
-    const createTabResult = await new Promise((resolve) => {
-      chrome.tabs.create({ url: meetingUrl, active: true }, resolve);
-    });
-    const tab = createTabResult;
-
-    // Store session ID and tab ID
+    console.log('Starting AI Helper for session:', sessionId, 'Meeting URL:', meetingUrl);
+    
+    // Store session info for AI helper
     await new Promise((resolve) => {
-      chrome.storage.local.set({ 
-        currentSessionId: sessionId, 
-        meetingTabId: tab.id 
+      chrome.storage.local.set({
+        'currentSession': {
+          id: sessionId,
+          meetingUrl: meetingUrl,
+          startTime: Date.now()
+        }
       }, resolve);
     });
 
-    // Create smaller overlay window
-    await new Promise((resolve) => {
-      chrome.windows.create({
-        url: chrome.runtime.getURL('ai-helper.html'),
-        type: 'popup',
-        width: 800,
-        height: 600,
-        left: (window.screen.availWidth - 800) / 2,
-        top: (window.screen.availHeight - 600) / 2,
-        focused: true
-      }, resolve);
+    // Send message to background script to open AI helper
+    chrome.runtime.sendMessage({
+      action: 'openAIHelper',
+      sessionId: sessionId,
+      meetingUrl: meetingUrl
     });
+
+    console.log('AI Helper request sent to background script');
+    
   } catch (error) {
     console.error('Failed to start AI Helper:', error);
     alert('Failed to start AI Helper. Please check console for details.');

@@ -1,0 +1,282 @@
+/* Tailwind Utility Classes Version - styles-tailwind.css */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom component classes using Tailwind utilities */
+
+.extension-window {
+  @apply w-[1365px] h-[488px] bg-bg-black rounded-[28px] flex relative;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+  border: 4px solid rgba(255, 255, 255, 0.02);
+}
+
+.left-sidebar {
+  @apply w-[92px] bg-sidebar-dark flex flex-col items-center p-4 relative;
+  border-radius: 28px 0 0 28px;
+  border-right: 2px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-top {
+  @apply flex flex-col items-center mb-8;
+}
+
+.control-pill {
+  @apply bg-white/90 rounded-[20px] p-1 flex flex-col gap-1 mb-4;
+}
+
+.pill-btn {
+  @apply w-8 h-8 bg-transparent border-none rounded-md flex items-center justify-center text-gray-600 cursor-pointer transition-all duration-200;
+}
+
+.pill-btn:hover {
+  @apply bg-black/10;
+}
+
+.logo-badge {
+  @apply w-14 h-14 bg-gray-800 rounded-full flex items-center justify-center border-2 border-white/10;
+}
+
+.logo-n {
+  @apply text-[28px] font-extrabold text-accent-orange;
+}
+
+.sidebar-nav {
+  @apply flex flex-col gap-3 w-full;
+}
+
+.nav-item {
+  @apply bg-transparent border border-transparent rounded-md p-3 px-2 flex flex-col items-center gap-1 cursor-pointer transition-all text-text-muted text-xs;
+}
+
+.nav-item:hover {
+  @apply bg-white/5 border-white/10;
+}
+
+.nav-icon {
+  @apply w-[18px] h-[18px] flex items-center justify-center relative;
+}
+
+.crown-badge .crown {
+  @apply absolute -top-1 -right-1 w-3 h-2;
+}
+
+.nav-label {
+  @apply text-[11px] font-medium text-center;
+}
+
+.main-canvas {
+  @apply flex-1 bg-main-gray mx-4 my-4 rounded-[28px] relative flex items-end justify-center overflow-hidden;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+
+.illustration-container {
+  @apply absolute bottom-5 left-1/2 transform -translate-x-1/2 opacity-[0.26];
+}
+
+.main-illustration {
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.right-panel {
+  @apply w-80 bg-panel-black flex flex-col relative border-l border-white/5;
+}
+
+.tabs-container {
+  @apply flex border-b border-white/10 px-6;
+}
+
+.tab-btn {
+  @apply bg-transparent border-none text-text-muted text-base font-medium px-6 py-4 cursor-pointer border-b-2 border-transparent transition-all;
+}
+
+.tab-btn.active {
+  @apply text-accent-orange border-accent-orange;
+}
+
+.tab-btn:hover:not(.active) {
+  @apply text-white/80;
+}
+
+.callout {
+  @apply bg-callout-brown rounded-lg p-4 m-6 relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.callout p {
+  @apply text-text-white text-sm leading-relaxed pr-6;
+}
+
+.callout-close {
+  @apply absolute top-2 right-2 w-7 h-7 bg-white/10 border-none rounded cursor-pointer flex items-center justify-center text-text-white transition-colors;
+}
+
+.callout-close:hover {
+  @apply bg-white/20;
+}
+
+.panel-content {
+  @apply flex-1 px-6 overflow-y-auto;
+}
+
+.transcription-list, .topics-list {
+  @apply py-4;
+}
+
+.drag-handle {
+  @apply absolute -right-1.5 top-1/2 transform -translate-y-1/2 w-3 h-8 cursor-col-resize flex items-center justify-center;
+}
+
+.drag-dots {
+  @apply w-1 h-3;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.3) 1px, transparent 1px);
+  background-size: 2px 3px;
+  background-repeat: repeat-y;
+}
+
+.bottom-bar {
+  @apply absolute bottom-0 left-0 right-0 h-20 bg-bg-black border-t border-white/10 flex items-center px-6 gap-4;
+  border-radius: 0 0 28px 28px;
+}
+
+.input-section {
+  @apply flex-1 flex items-center gap-3;
+}
+
+.camera-btn {
+  @apply w-10 h-10 bg-white/10 border border-white/20 rounded-md text-text-muted cursor-pointer flex items-center justify-center transition-all;
+}
+
+.camera-btn:hover {
+  @apply bg-white/15 border-white/30;
+}
+
+.prompt-input {
+  @apply flex-1 h-14 bg-input-pale border border-black/10 rounded-md px-4 text-sm text-gray-800;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.prompt-input::placeholder {
+  @apply text-gray-500;
+}
+
+.prompt-input:focus {
+  @apply outline-none border-accent-orange;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 0 0 2px rgba(255, 106, 43, 0.1);
+}
+
+.help-button {
+  @apply bg-accent-orange border-none rounded-md px-6 py-4 text-text-white font-semibold cursor-pointer flex flex-col items-center gap-0.5 transition-colors;
+  box-shadow: 0 2px 8px rgba(255, 106, 43, 0.3);
+}
+
+.help-button:hover {
+  background: #e5592a;
+}
+
+.help-text {
+  @apply text-sm;
+}
+
+.help-hint {
+  @apply text-[11px] opacity-80;
+}
+
+.bottom-right {
+  @apply flex items-center;
+}
+
+.checkbox-label {
+  @apply flex items-center gap-2 text-[13px] text-text-muted cursor-pointer;
+}
+
+.hide-conversation {
+  @apply w-4 h-4;
+  accent-color: var(--accent-orange);
+}
+
+/* Focus states */
+button:focus-visible,
+input:focus-visible {
+  @apply outline-2 outline-accent-orange outline-offset-2;
+}
+
+/* Scrollbar styles */
+.panel-content::-webkit-scrollbar {
+  @apply w-1.5;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  @apply bg-white/5;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  @apply bg-white/20 rounded;
+}
+
+.panel-content::-webkit-scrollbar-thumb:hover {
+  @apply bg-white/30;
+}
+
+/* Dynamic content styles */
+.transcription-item {
+  @apply py-3 border-b border-white/5;
+}
+
+.transcription-header {
+  @apply flex justify-between items-center mb-1.5;
+}
+
+.speaker {
+  @apply font-semibold text-[13px];
+}
+
+.speaker.user {
+  @apply text-blue-400;
+}
+
+.speaker.ai {
+  @apply text-accent-orange;
+}
+
+.speaker.interviewer {
+  @apply text-green-400;
+}
+
+.timestamp {
+  @apply text-[11px] text-text-muted;
+}
+
+.transcription-text {
+  @apply text-sm leading-relaxed text-gray-200;
+}
+
+.topic-item {
+  @apply py-3 px-4 mb-2 bg-white/5 rounded-lg cursor-pointer transition-colors text-sm;
+}
+
+.topic-item:hover {
+  @apply bg-accent-orange/10 text-accent-orange;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1024px) {
+  .extension-window {
+    @apply w-[1024px] h-[420px];
+  }
+}
+
+@media (max-width: 800px) {
+  .extension-window {
+    @apply w-[800px] h-[360px];
+  }
+  
+  .left-sidebar {
+    @apply w-16;
+  }
+  
+  .right-panel {
+    @apply w-64;
+  }
+}

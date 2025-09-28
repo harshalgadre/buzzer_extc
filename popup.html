@@ -22,6 +22,7 @@
       padding: 0;
       position: relative;
       overflow: hidden;
+      line-height: 1.5;
     }
 
     /* Login Screen */
@@ -45,17 +46,19 @@
 
     .login-right {
       flex: 1;
-      background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       position: relative;
+      border-left: 1px solid #e2e8f0;
     }
 
     .hero-image {
       width: 80%;
       height: 80%;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23f8fafc"/><circle cx="200" cy="150" r="40" fill="%23e2e8f0"/><rect x="160" y="200" width="80" height="100" rx="10" fill="%23ffffff"/><rect x="120" y="320" width="160" height="60" rx="8" fill="%23f97316"/></svg>') center/contain no-repeat;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23f8fafc"/><circle cx="200" cy="160" r="30" fill="%23e2e8f0"/><rect x="170" y="200" width="60" height="80" rx="8" fill="%23ffffff" stroke="%23e5e7eb" stroke-width="1"/><rect x="140" y="300" width="120" height="50" rx="6" fill="%23ffffff" stroke="%23e5e7eb" stroke-width="1"/></svg>') center/contain no-repeat;
+      opacity: 0.8;
     }
 
     .ntro-logo {
@@ -65,39 +68,38 @@
     }
 
     .ntro-icon {
-      font-size: 48px;
-      font-weight: 800;
-      color: #f97316;
+      font-size: 36px;
+      font-weight: 700;
+      color: #2563eb;
       margin-right: 12px;
-      transform: rotate(-15deg);
     }
 
     .ntro-text {
-      font-size: 32px;
-      font-weight: 700;
+      font-size: 28px;
+      font-weight: 600;
       color: #1f2937;
     }
 
     .ntro-version {
-      font-size: 14px;
+      font-size: 12px;
       color: #6b7280;
-      margin-top: 4px;
+      margin-top: 2px;
       display: block;
     }
 
     .welcome-section {
-      margin-bottom: 60px;
+      margin-bottom: 48px;
     }
 
     .welcome-title {
-      font-size: 32px;
-      font-weight: 700;
+      font-size: 24px;
+      font-weight: 600;
       color: #1f2937;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .welcome-subtitle {
-      font-size: 16px;
+      font-size: 14px;
       color: #6b7280;
       max-width: 300px;
       line-height: 1.5;
@@ -111,22 +113,22 @@
     }
 
     .login-button {
-      background: #f97316;
+      background: #2563eb;
       color: white;
       border: none;
-      padding: 16px 48px;
-      border-radius: 12px;
-      font-weight: 600;
-      font-size: 16px;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 14px;
       cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .login-button:hover {
-      background: #ea580c;
+      background: #1d4ed8;
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
     .login-form {
@@ -140,13 +142,15 @@
       width: 100%;
       padding: 12px 16px;
       border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 16px;
+      border-radius: 6px;
+      font-size: 14px;
       outline: none;
+      transition: border-color 0.2s;
     }
 
     .login-form input:focus {
-      border-color: #f97316;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
     .login-form-actions {
@@ -158,36 +162,44 @@
       background: transparent;
       color: #6b7280;
       border: 1px solid #d1d5db;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 500;
       cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-back:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
     }
 
     .btn-login {
-      background: #f97316;
+      background: #2563eb;
       color: white;
       border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 500;
       cursor: pointer;
       flex: 1;
+      transition: background 0.2s;
     }
 
     .btn-login:hover {
-      background: #ea580c;
+      background: #1d4ed8;
     }
 
     .signup-link {
       color: #6b7280;
-      font-size: 14px;
+      font-size: 13px;
+      text-align: center;
     }
 
     .signup-link a {
-      color: #f97316;
+      color: #2563eb;
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 500;
     }
 
     .signup-link a:hover {
@@ -198,17 +210,19 @@
     .dashboard-container {
       display: none;
       height: 650px;
-      background: #5b4a80;
-      color: white;
+      background: #ffffff;
+      color: #1f2937;
       padding: 0;
+      border: 1px solid #e5e7eb;
     }
 
     .dashboard-header {
       padding: 20px 24px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid #e5e7eb;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: #ffffff;
     }
 
     .user-info {
@@ -219,7 +233,8 @@
 
     .user-name {
       font-weight: 600;
-      color: white;
+      color: #1f2937;
+      font-size: 16px;
     }
 
     .user-balance {
@@ -227,45 +242,51 @@
       align-items: center;
       gap: 6px;
       font-size: 14px;
-      color: #fbbf24;
+      color: #059669;
+      margin-top: 4px;
     }
 
     .coin-icon {
-      width: 16px;
-      height: 16px;
-      background: #fbbf24;
+      width: 14px;
+      height: 14px;
+      background: #059669;
       border-radius: 50%;
       display: inline-block;
     }
 
     .user-plan {
-      color: #10b981;
+      color: #059669;
       font-size: 12px;
-      background: rgba(16, 185, 129, 0.1);
+      background: rgba(5, 150, 105, 0.1);
       padding: 4px 8px;
-      border-radius: 6px;
+      border-radius: 4px;
       margin-top: 4px;
+      font-weight: 500;
     }
 
     .power-btn {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 18px;
+      background: transparent;
+      border: 1px solid #d1d5db;
+      color: #6b7280;
+      font-size: 14px;
       cursor: pointer;
-      padding: 8px;
+      padding: 8px 16px;
       border-radius: 6px;
-      transition: background 0.2s;
+      transition: all 0.2s;
+      font-weight: 500;
     }
 
     .power-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: #f9fafb;
+      border-color: #9ca3af;
+      color: #374151;
     }
 
     .dashboard-sidebar {
       padding: 24px;
-      background: rgba(0, 0, 0, 0.15);
+      background: #f9fafb;
       height: calc(650px - 80px);
+      border-right: 1px solid #e5e7eb;
     }
 
     .sidebar-nav {
@@ -273,46 +294,53 @@
     }
 
     .sidebar-nav li {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       padding: 12px 16px;
       border-radius: 8px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s;
+      border: 1px solid transparent;
     }
 
     .sidebar-nav li:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: #ffffff;
+      border-color: #e5e7eb;
     }
 
     .sidebar-nav li.active {
-      background: rgba(249, 115, 22, 0.2);
-      color: #f97316;
+      background: #eff6ff;
+      border-color: #dbeafe;
+      color: #1d4ed8;
     }
 
     .nav-icon {
-      width: 20px;
-      height: 20px;
-      margin-right: 12px;
+      width: 18px;
+      height: 18px;
       background: currentColor;
-      border-radius: 50%;
-      opacity: 0.7;
+      border-radius: 4px;
+      opacity: 0.6;
+      margin-right: 12px;
+      flex-shrink: 0;
     }
 
     .nav-text {
       font-weight: 500;
+      font-size: 14px;
     }
 
     .nav-subtitle {
       font-size: 12px;
-      opacity: 0.7;
+      opacity: 0.6;
       margin-top: 2px;
+      color: #6b7280;
     }
 
     .dashboard-main {
       padding: 24px;
       flex: 1;
+      background: #ffffff;
     }
 
     .interview-card {
@@ -360,21 +388,23 @@
     }
 
     .create-new-btn {
-      background: #f97316;
+      background: #2563eb;
       color: white;
       border: none;
-      padding: 16px 24px;
-      border-radius: 12px;
-      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-weight: 500;
       cursor: pointer;
       position: absolute;
       top: 20px;
       right: 24px;
-      font-size: 14px;
+      font-size: 13px;
+      transition: background 0.2s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     .create-new-btn:hover {
-      background: #ea580c;
+      background: #1d4ed8;
     }
 
     .scheduled-interviews-section {
@@ -392,18 +422,20 @@
     .form-container {
       display: none;
       height: 650px;
-      background: #5b4a80;
-      color: white;
+      background: #ffffff;
+      color: #1f2937;
       padding: 0;
       overflow-y: auto;
+      border: 1px solid #e5e7eb;
     }
 
     .form-header {
       padding: 20px 24px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid #e5e7eb;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: #ffffff;
     }
 
     .form-content {
@@ -412,6 +444,7 @@
       max-height: 520px;
       overflow-y: auto;
       position: relative;
+      background: #ffffff;
     }
 
     .form-group {
@@ -427,18 +460,24 @@
 
     .form-input, .form-select, .form-textarea {
       width: 100%;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      padding: 12px 16px;
-      color: white;
+      background: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: #1f2937;
       font-size: 14px;
       outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
 
     .form-select {
       cursor: pointer;
-      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
       background-position: right 12px center;
       background-repeat: no-repeat;
       background-size: 16px;
@@ -447,13 +486,13 @@
     }
 
     .form-select option {
-      background: #5b4a80;
-      color: white;
+      background: #ffffff;
+      color: #1f2937;
       padding: 8px;
     }
 
     .form-input::placeholder, .form-textarea::placeholder {
-      color: rgba(255, 255, 255, 0.5);
+      color: #9ca3af;
     }
 
     .form-textarea {
@@ -470,35 +509,36 @@
 
     .toggle-switch {
       position: relative;
-      width: 44px;
-      height: 24px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
+      width: 36px;
+      height: 20px;
+      background: #e5e7eb;
+      border-radius: 10px;
       cursor: pointer;
       transition: background 0.3s;
     }
 
     .toggle-switch.active {
-      background: #10b981;
+      background: #2563eb;
     }
 
     .toggle-slider {
       position: absolute;
       top: 2px;
       left: 2px;
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       background: white;
       border-radius: 50%;
       transition: transform 0.3s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     }
 
     .toggle-switch.active .toggle-slider {
-      transform: translateX(20px);
+      transform: translateX(16px);
     }
 
     .premium-badge {
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      background: linear-gradient(135deg, #f59e0b, #d97706);
       color: white;
       font-size: 10px;
       padding: 2px 6px;
@@ -511,33 +551,41 @@
       display: flex;
       gap: 12px;
       padding: 20px 24px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid #e5e7eb;
+      background: #f9fafb;
     }
 
     .btn-secondary {
-      background: transparent;
-      color: white;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
+      background: #ffffff;
+      color: #6b7280;
+      border: 1px solid #d1d5db;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 500;
       cursor: pointer;
       flex: 1;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #f9fafb;
+      border-color: #9ca3af;
     }
 
     .btn-primary {
-      background: #f97316;
+      background: #2563eb;
       color: white;
       border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 500;
       cursor: pointer;
       flex: 1;
+      transition: background 0.2s;
     }
 
     .btn-primary:hover {
-      background: #ea580c;
+      background: #1d4ed8;
     }
 
     .hidden {
@@ -549,13 +597,17 @@
     }
 
     .form-content::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.1);
+      background: #f3f4f6;
       border-radius: 3px;
     }
 
     .form-content::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.3);
+      background: #d1d5db;
       border-radius: 3px;
+    }
+
+    .form-content::-webkit-scrollbar-thumb:hover {
+      background: #9ca3af;
     }
 
     .dashboard-layout {
@@ -571,14 +623,16 @@
 
     .sidebar {
       width: 160px;
-      background: rgba(0, 0, 0, 0.2);
+      background: #f9fafb;
       padding: 24px 16px;
+      border-right: 1px solid #e5e7eb;
     }
 
     .main-content {
       flex: 1;
       padding: 24px;
       position: relative;
+      background: #ffffff;
     }
   </style>
 </head>

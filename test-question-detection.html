@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Question Detection & AI Response</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #555;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+        }
+        .test-button {
+            padding: 10px 20px;
+            background: #FF6A2B;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #e55a20;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 5px;
+            border-left: 3px solid #FF6A2B;
+        }
+        .question-examples {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .question-examples h3 {
+            color: #FF6A2B;
+            margin-bottom: 10px;
+        }
+        .question-examples ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .question-examples li {
+            padding: 5px 0;
+            cursor: pointer;
+            border-bottom: 1px solid #555;
+        }
+        .question-examples li:hover {
+            color: #FF6A2B;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧠 AI Question Detection & Response Test</h1>
+        <p>This page tests the question detection regex patterns and Gemini AI integration used in the Buzzer extension.</p>
+        
+        <div class="question-examples">
+            <h3>📝 Sample Questions (Click to Test)</h3>
+            <ul id="sample-questions">
+                <li>What is JavaScript?</li>
+                <li>How does HTML work?</li>
+                <li>Can you explain Node.js?</li>
+                <li>Tell me about CSS</li>
+                <li>What are the benefits of React?</li>
+                <li>How to implement async/await in JavaScript?</li>
+                <li>Explain the difference between var, let, and const</li>
+                <li>What is the DOM?</li>
+                <li>How does event bubbling work?</li>
+                <li>This is not a question</li>
+            </ul>
+        </div>
+
+        <div>
+            <label for="test-input">Enter your test text:</label>
+            <input type="text" id="test-input" class="test-input" placeholder="Type a question here...">
+            <button onclick="testQuestion()" class="test-button">🔍 Test Question Detection</button>
+            <button onclick="processWithAI()" class="test-button">🤖 Process with AI</button>
+            <button onclick="clearResults()" class="test-button">🗑️ Clear</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // Question detection regex patterns (same as in the extension)
+        const questionPatterns = [
+            /\b(?:what|how|why|when|where|who|which|can you|could you|would you|do you|did you|will you|is|are|am)\b.*\?/i,
+            /\b(?:explain|describe|tell me|show me|help me|teach me)\b.*/i,
+            /\b(?:what is|how to|why does|when did|where can|who is|which one)\b.*/i,
+            /\b(?:javascript|html|css|nodejs|node\.?js|react|angular|vue|python|java|c\+\+|programming|coding|development)\b.*[\?]*$/i
+        ];
+
+        // Gemini API configuration
+        const geminiApiKey = 'AIzaSyALmZY3vJq-4PFIUaHl4ZZsYGXdMkI7fCM';
+        const geminiApiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+
+        function isQuestion(text) {
+            return questionPatterns.some((pattern, index) => {
+                const isMatch = pattern.test(text.trim());
+                if (isMatch) {
+                    console.log(`✅ Matched pattern ${index + 1}:`, pattern);
+                }
+                return isMatch;
+            });
+        }
+
+        function testQuestion() {
+            const input = document.getElementById('test-input');
+            const text = input.value.trim();
+            
+            if (!text) {
+                showResult('Please enter some text to test.', 'warning');
+                return;
+            }
+
+            const isQ = isQuestion(text);
+            const result = isQ ? 
+                `✅ <strong>"${text}"</strong> IS detected as a question!` : 
+                `❌ <strong>"${text}"</strong> is NOT detected as a question.`;
+            
+            showResult(result, isQ ? 'success' : 'error');
+        }
+
+        async function processWithAI() {
+            const input = document.getElementById('test-input');
+            const text = input.value.trim();
+            
+            if (!text) {
+                showResult('Please enter a question to process.', 'warning');
+                return;
+            }
+
+            showResult('🤖 Processing with Gemini AI...', 'loading');
+
+            try {
+                const response = await fetch(`${geminiApiUrl}?key=${geminiApiKey}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `You are an AI assistant helping with technical questions. Please provide a clear, concise answer to this question: "${text}". Keep the response under 200 words and focus on practical, actionable information.`
+                            }]
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const answer = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (answer) {
+                    showResult(`
+                        <div style="margin-bottom: 15px;">
+                            <strong style="color: #3b82f6;">Question:</strong><br>
+                            ${text}
+                        </div>
+                        <div>
+                            <strong style="color: #FF6A2B;">AI Answer:</strong><br>
+                            ${answer}
+                        </div>
+                    `, 'ai-response');
+                } else {
+                    throw new Error('No answer received from API');
+                }
+            } catch (error) {
+                console.error('Error processing question:', error);
+                showResult(`❌ Error processing with AI: ${error.message}`, 'error');
+            }
+        }
+
+        function showResult(content, type) {
+            const resultsDiv = document.getElementById('results');
+            const colors = {
+                success: '#10b981',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                loading: '#6b7280',
+                'ai-response': '#FF6A2B'
+            };
+            
+            resultsDiv.innerHTML = `
+                <div class="result" style="border-left-color: ${colors[type] || '#FF6A2B'}">
+                    ${content}
+                </div>
+            `;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('test-input').value = '';
+        }
+
+        // Add click handlers for sample questions
+        document.addEventListener('DOMContentLoaded', function() {
+            const sampleQuestions = document.querySelectorAll('#sample-questions li');
+            sampleQuestions.forEach(li => {
+                li.addEventListener('click', function() {
+                    document.getElementById('test-input').value = this.textContent;
+                    testQuestion();
+                });
+            });
+        });
+
+        // Test on page load
+        window.addEventListener('load', function() {
+            showResult('Ready to test question detection and AI responses! Try clicking on the sample questions above or type your own.', 'success');
+        });
+    </script>
+</body>
+</html>

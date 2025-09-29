@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Buzzer AI Overlay</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Buzzer AI Overlay v2.1</h1>
+    <p>This page helps test if the improved overlay is working correctly.</p>
+    
+    <button class="test-button" onclick="loadOverlay()">Load Overlay Directly</button>
+    <button class="test-button" onclick="testSTT()">Test STT</button>
+    <button class="test-button" onclick="clearAll()">Clear All</button>
+    
+    <div class="status" id="status">Ready to test...</div>
+
+    <script>
+        function loadOverlay() {
+            console.log('Loading overlay directly...');
+            document.getElementById('status').innerHTML = 'Loading overlay...';
+            
+            // Set screen share flag
+            window.buzzerScreenShareActive = true;
+            
+            // Load the overlay script
+            const script = document.createElement('script');
+            script.src = './ai-helper-window/inject-overlay.js';
+            script.onload = () => {
+                document.getElementById('status').innerHTML = 'Overlay loaded! Check console for v2.1 messages.';
+            };
+            script.onerror = () => {
+                document.getElementById('status').innerHTML = 'Failed to load overlay script.';
+            };
+            document.head.appendChild(script);
+        }
+
+        function testSTT() {
+            if (typeof SpeechRecognition !== 'undefined' || typeof webkitSpeechRecognition !== 'undefined') {
+                document.getElementById('status').innerHTML = 'STT supported! Try loading the overlay and speaking.';
+            } else {
+                document.getElementById('status').innerHTML = 'STT not supported in this browser.';
+            }
+        }
+
+        function clearAll() {
+            // Remove overlay if present
+            const overlay = document.getElementById('buzzer-ai-overlay');
+            if (overlay) overlay.remove();
+            
+            // Remove version badge
+            const badge = document.getElementById('buzzer-version-badge');
+            if (badge) badge.remove();
+            
+            document.getElementById('status').innerHTML = 'Cleared all overlays.';
+        }
+
+        // Auto-test STT support on load
+        window.onload = function() {
+            testSTT();
+        };
+    </script>
+</body>
+</html>

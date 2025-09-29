@@ -1,9 +1,14 @@
 // inject-overlay.js - Script to inject the floating AI helper overlay into the page
+// Version 2.1 - Updated STT and Dragging
 
 (function() {
-  // Prevent multiple injections
-  if (document.getElementById('buzzer-ai-overlay')) {
-    return;
+  console.log('🚀 Buzzer AI Overlay v2.1 Loading...');
+  
+  // Remove existing overlay if present (force refresh)
+  const existing = document.getElementById('buzzer-ai-overlay');
+  if (existing) {
+    existing.remove();
+    console.log('♻️ Removed existing overlay, loading fresh version...');
   }
 
   // Create the overlay container
@@ -17,6 +22,11 @@
         <!-- Top logo and pill controls -->
         <div class="sidebar-top">
           <div class="control-pill">
+            <button class="pill-btn minimize-btn" aria-label="Minimize">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
+              </svg>
+            </button>
             <button class="pill-btn" aria-label="Screenshot">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                 <path d="M2 4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4zm10-1.5H4A1.5 1.5 0 0 0 2.5 4v8A1.5 1.5 0 0 0 4 13.5h8a1.5 1.5 0 0 0 1.5-1.5V4A1.5 1.5 0 0 0 12 2.5z"/>
@@ -30,13 +40,25 @@
             </button>
           </div>
           
-          <div class="logo-badge">
-            <span class="logo-n">N</span>
+          <div class="logo-badge" style="background: linear-gradient(135deg, #00ff88, #00cc66) !important;">
+            <span class="logo-n" style="color: #000 !important; font-weight: bold;">N</span>
+            <div style="position: absolute; top: -8px; right: -8px; background: #ff4444; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold;">2</div>
           </div>
         </div>
 
         <!-- Navigation controls -->
         <nav class="sidebar-nav" role="tablist">
+          <!-- Microphone Button -->
+          <button class="nav-item mic-btn" role="tab" aria-selected="false">
+            <div class="nav-icon">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+                <rect x="7" y="2" width="4" height="8" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <path d="M4 9v1a5 5 0 0 0 10 0V9M9 14v2M7 16h4" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+            </div>
+            <span class="nav-label">Mic</span>
+          </button>
+
           <button class="nav-item" role="tab" aria-selected="false">
             <div class="nav-icon">
               <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
@@ -189,15 +211,16 @@
       <!-- Bottom Bar -->
       <div class="bottom-bar">
         <div class="input-section">
-          <button class="camera-btn" aria-label="Camera options">
+          <button class="camera-btn" aria-label="Toggle microphone">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5z"/>
+              <rect x="6" y="1" width="4" height="8" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              <path d="M3 8v1a5 5 0 0 0 10 0V8M8 13v2M6 15h4" stroke="currentColor" stroke-width="1.5"/>
             </svg>
           </button>
           <input 
             type="text" 
             class="prompt-input" 
-            placeholder="Type or OCR quick prompt. Please wait until a meeting host brings you in."
+            placeholder="Start screen sharing or mic first, then type prompts here..."
             aria-label="AI prompt input"
           >
         </div>
@@ -231,7 +254,7 @@
       align-items: center !important;
       justify-content: center !important;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-      pointer-events: auto !important;
+      pointer-events: none !important;
     }
 
     #buzzer-ai-overlay .overlay-backdrop {
@@ -240,9 +263,10 @@
       left: 0 !important;
       width: 100% !important;
       height: 100% !important;
-      background: rgba(0, 0, 0, 0.4) !important;
-      backdrop-filter: blur(4px) !important;
+      background: rgba(0, 0, 0, 0.1) !important;
+      backdrop-filter: blur(1px) !important;
       z-index: 1 !important;
+      pointer-events: none !important;
     }
 
     #buzzer-ai-overlay .extension-window {
@@ -251,6 +275,31 @@
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
       border: 1px solid rgba(255, 255, 255, 0.1) !important;
       animation: slideIn 0.3s ease-out !important;
+      pointer-events: auto !important;
+      cursor: grab !important;
+      user-select: none !important;
+      min-width: 300px !important;
+      min-height: 200px !important;
+      resize: both !important;
+      overflow: hidden !important;
+    }
+    
+    #buzzer-ai-overlay .extension-window:active {
+      cursor: grabbing !important;
+    }
+    
+    #buzzer-ai-overlay .extension-window.resizing {
+      cursor: nw-resize !important;
+    }    #buzzer-ai-overlay .extension-window:active {
+      cursor: grabbing !important;
+    }
+    
+    #buzzer-ai-overlay .extension-window.dragging {
+      transition: none !important;
+    }
+    
+    #buzzer-ai-overlay .extension-window * {
+      pointer-events: auto !important;
     }
 
     @keyframes slideIn {
@@ -262,6 +311,56 @@
         opacity: 1;
         transform: scale(1) translateY(0);
       }
+    }
+    
+    /* Minimized state */
+    #buzzer-ai-overlay.minimized .extension-window {
+      width: 60px !important;
+      height: 60px !important;
+      border-radius: 50% !important;
+      overflow: hidden !important;
+      cursor: pointer !important;
+      transition: all 0.3s ease !important;
+    }
+    
+    #buzzer-ai-overlay.minimized .extension-window > *:not(.logo-badge) {
+      display: none !important;
+    }
+    
+    #buzzer-ai-overlay.minimized .logo-badge {
+      position: absolute !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      width: 40px !important;
+      height: 40px !important;
+      margin: 0 !important;
+    }
+    
+    #buzzer-minimized-logo {
+      position: fixed !important;
+      bottom: 20px !important;
+      right: 20px !important;
+      width: 60px !important;
+      height: 60px !important;
+      border-radius: 50% !important;
+      background: linear-gradient(135deg, #00ff88, #00cc66) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      z-index: 999999 !important;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+      font-size: 24px !important;
+      font-weight: bold !important;
+      color: #000 !important;
+      user-select: none !important;
+      transition: all 0.3s ease !important;
+    }
+    
+    #buzzer-minimized-logo:hover {
+      transform: scale(1.1) !important;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4) !important;
     }
 
     /* Override any page styles that might interfere */
@@ -309,11 +408,7 @@
       color: #bdbdbd !important;
     }
     
-    #buzzer-ai-overlay .transcription-text {
-      font-size: 14px !important;
-      line-height: 1.4 !important;
-      color: #e5e5e5 !important;
-    }
+            #buzzer-ai-overlay .chat-text {\n      font-size: 16px !important;\n      line-height: 1.4 !important;\n      color: inherit !important;\n      font-weight: 400 !important;\n      margin: 0 !important;\n    }\n    \n    #buzzer-ai-overlay .transcription-list {\n      padding: 16px 0 !important;\n      overflow-y: auto !important;\n      max-height: calc(100vh - 200px) !important;\n    }\n    \n    #buzzer-ai-overlay .transcription-list::after {\n      content: '' !important;\n      display: block !important;\n      clear: both !important;\n    }"
     
     #buzzer-ai-overlay .topic-item {
       padding: 12px 16px !important;
@@ -333,6 +428,193 @@
     #buzzer-ai-overlay .topics-list {
       padding: 16px 0 !important;
     }
+    
+    /* Draggable window positioning */
+    #buzzer-ai-overlay {
+      align-items: flex-start !important;
+      justify-content: flex-end !important;
+      padding: 20px !important;
+    }
+    
+    #buzzer-ai-overlay .extension-window {
+      position: fixed !important;
+      margin: 0 !important;
+      transform: none !important;
+      /* Initial position set by JavaScript */
+    }
+    
+    #buzzer-ai-overlay .extension-window.dragging {
+      transition: none !important;
+      opacity: 0.9 !important;
+    }
+    
+    /* Removed specific drag cursors since whole window is draggable */
+    
+    /* Responsive positioning for overlay */
+    @media (max-width: 1400px) {
+      #buzzer-ai-overlay .extension-window {
+        width: 90vw !important;
+        max-width: 1000px !important;
+        height: auto !important;
+        max-height: 80vh !important;
+        top: 20px !important;
+        right: 20px !important;
+      }
+    }
+    
+    @media (max-width: 1024px) {
+      #buzzer-ai-overlay .extension-window {
+        width: 95vw !important;
+        height: 70vh !important;
+        top: 10px !important;
+        right: 10px !important;
+        left: 10px !important;
+      }
+    }
+
+    @media (max-height: 600px) {
+      #buzzer-ai-overlay .extension-window {
+        height: 85vh !important;
+        max-height: none !important;
+        top: 10px !important;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      #buzzer-ai-overlay .extension-window {
+        width: 100vw !important;
+        height: 100vh !important;
+        top: 0 !important;
+        right: 0 !important;
+        left: 0 !important;
+        border-radius: 0 !important;
+        cursor: default !important;
+      }
+      
+      #buzzer-ai-overlay .chat-text {
+        font-size: 18px !important;
+        line-height: 1.6 !important;
+      }
+      
+      #buzzer-ai-overlay .chat-bubble {
+        padding: 14px 18px !important;
+        font-size: 16px !important;
+      }
+      
+      #buzzer-ai-overlay .chat-message {
+        max-width: 85% !important;
+      }
+    }
+    
+    /* WhatsApp-style chat bubbles starting from top */
+    #buzzer-ai-overlay .chat-message {
+      display: flex !important;
+      margin: 8px 0 !important;
+      padding: 0 16px !important;
+      width: 100% !important;
+      clear: both !important;
+      flex-shrink: 0 !important;
+      box-sizing: border-box !important;
+    }
+    
+    #buzzer-ai-overlay .interim-message {
+      display: flex !important;
+      margin: 8px 16px !important;
+      max-width: calc(100% - 32px) !important;
+      opacity: 0.7 !important;
+      animation: pulse 1.5s infinite !important;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 0.9; }
+    }
+    
+    /* WhatsApp-style Chat Layout */
+    #buzzer-ai-overlay .chat-message {
+      margin-bottom: 8px !important;
+      display: flex !important;
+      clear: both !important;
+    }
+    
+    /* System Audio (Interviewer) - Left side like received messages */
+    #buzzer-ai-overlay .chat-message.interviewer {
+      justify-content: flex-start !important;
+      margin-right: 60px !important;
+    }
+    
+    /* Mic Audio (You) - Right side like sent messages */
+    #buzzer-ai-overlay .chat-message.user {
+      justify-content: flex-end !important;
+      margin-left: 60px !important;
+    }
+    
+    /* AI messages - Center */
+    #buzzer-ai-overlay .chat-message.ai {
+      justify-content: center !important;
+      margin: 16px 20px !important;
+    }
+    
+    #buzzer-ai-overlay .chat-bubble {
+      max-width: 75% !important;
+      padding: 12px 16px !important;
+      border-radius: 18px !important;
+      position: relative !important;
+      word-wrap: break-word !important;
+      font-size: 15px !important;
+      line-height: 1.4 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* User bubble - Blue like WhatsApp sent messages (right side) */
+    #buzzer-ai-overlay .chat-message.user .chat-bubble {
+      background: #007AFF !important;
+      color: white !important;
+      border-bottom-right-radius: 4px !important;
+    }
+
+    /* Interviewer bubble - Gray like WhatsApp received messages (left side) */
+    #buzzer-ai-overlay .chat-message.interviewer .chat-bubble {
+      background: #E5E5EA !important;
+      color: #000000 !important;
+      border-bottom-left-radius: 4px !important;
+    }
+
+    /* AI messages */
+    #buzzer-ai-overlay .chat-message.ai .chat-bubble {
+      background: linear-gradient(135deg, #FF6B35, #F7931E) !important;
+      color: white !important;
+      text-align: center !important;
+      border-radius: 18px !important;
+      font-weight: 600 !important;
+    }
+    
+    /* Sender labels */
+    #buzzer-ai-overlay .chat-sender {
+      font-size: 12px !important;
+      font-weight: 600 !important;
+      margin-bottom: 4px !important;
+      opacity: 0.8 !important;
+    }
+    
+    #buzzer-ai-overlay .chat-message.interviewer .chat-sender {
+      color: #666 !important;
+    }
+    
+    #buzzer-ai-overlay .chat-message.user .chat-sender {
+      color: rgba(255,255,255,0.9) !important;
+    }
+    
+    #buzzer-ai-overlay .timestamp {
+      font-size: 11px !important;
+      opacity: 0.7 !important;
+      margin-top: 4px !important;
+      text-align: right !important;
+    }
+    
+    #buzzer-ai-overlay .chat-message.interviewer .timestamp {
+      text-align: left !important;
+    }
   `;
 
   // Append to head to ensure proper CSS loading
@@ -342,30 +624,92 @@
   // Initialize the overlay functionality
   class OverlayExtensionWindow {
     constructor() {
+      console.log('🎯 NEW VERSION: OverlayExtensionWindow v2.1 Initializing...');
       this.activeTab = 'transcription';
       this.helpCount = 3;
       this.calloutVisible = true;
       this.overlay = overlay;
+      this.isScreenSharing = window.buzzerScreenShareActive || false;
+      this.isUserMicOn = false;
+      this.transcriptionItems = [];
+      this.screenStream = null;
+      this.userMicStream = null;
+      this.systemRecognition = null;
+      this.userRecognition = null;
+      
+      // Add version indicator to overlay
+      this.addVersionIndicator();
       this.init();
     }
 
+    addVersionIndicator() {
+      // Add a small version badge to show new version is active
+      const badge = document.createElement('div');
+      badge.style.cssText = `
+        position: fixed !important;
+        top: 10px !important;
+        left: 10px !important;
+        background: #00ff00 !important;
+        color: #000 !important;
+        padding: 4px 8px !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        font-weight: bold !important;
+        z-index: 1000000 !important;
+        font-family: monospace !important;
+      `;
+      badge.textContent = 'v2.1 ACTIVE';
+      badge.id = 'buzzer-version-badge';
+      document.body.appendChild(badge);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        const existingBadge = document.getElementById('buzzer-version-badge');
+        if (existingBadge) existingBadge.remove();
+      }, 3000);
+    }
+
     init() {
+      console.log('🔄 Initializing with improved STT and dragging...');
+      console.log('🔍 Screen sharing status:', this.isScreenSharing);
+      console.log('🔍 buzzerScreenShareActive:', window.buzzerScreenShareActive);
+      
       this.setupEventListeners();
       this.updateUI();
+      
+      // Start system audio capture automatically with delay to prevent duplicates
+      console.log('🎤 Starting system audio transcription...');
+      setTimeout(() => {
+        this.initializeScreenSharing();
+      }, 1000);
+      
+      // Show ready message
+      setTimeout(() => {
+        console.log('✅ AI Helper v2.1 ready with system STT active!');
+      }, 500);
     }
 
     setupEventListeners() {
-      // Close overlay
+      // Close overlay only via close button, not backdrop
       const closeBtn = this.overlay.querySelector('.overlay-close');
-      const backdrop = this.overlay.querySelector('.overlay-backdrop');
+      const minimizeBtn = this.overlay.querySelector('.minimize-btn');
       
       if (closeBtn) {
         closeBtn.addEventListener('click', () => this.closeOverlay());
       }
       
-      if (backdrop) {
-        backdrop.addEventListener('click', () => this.closeOverlay());
+      if (minimizeBtn) {
+        console.log('🔧 Setting up minimize button listener...');
+        minimizeBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('🔽 Minimize button clicked!');
+          this.minimizeOverlay();
+        });
+        console.log('✅ Minimize button listener ready');
       }
+      
+      // Remove backdrop click to close - we want background to be clickable
 
       // Tab switching
       const tabButtons = this.overlay.querySelectorAll('.tab-btn');
@@ -403,21 +747,48 @@
         });
       }
 
-      // Navigation items
+      // Navigation items with special handling for mic
       const navItems = this.overlay.querySelectorAll('.nav-item');
-      navItems.forEach(item => {
+      navItems.forEach((item, index) => {
         item.addEventListener('click', () => {
-          navItems.forEach(n => n.classList.remove('active'));
-          item.classList.add('active');
+          const label = item.querySelector('.nav-label').textContent;
+          
+          if (label === 'Mic') {
+            this.toggleUserMic();
+          } else {
+            // Regular nav item
+            navItems.forEach(n => n.classList.remove('active'));
+            item.classList.add('active');
+          }
         });
       });
 
-      // Prevent clicks inside the window from closing the overlay
+      // Camera button (microphone)
+      const cameraBtn = this.overlay.querySelector('.camera-btn');
+      if (cameraBtn) {
+        cameraBtn.addEventListener('click', () => {
+          this.toggleUserMic();
+        });
+      }
+
+      // Prevent clicks inside the window from closing the overlay and add drag functionality
       const extensionWindow = this.overlay.querySelector('.extension-window');
       if (extensionWindow) {
+        // Set initial position explicitly
+        extensionWindow.style.position = 'fixed';
+        extensionWindow.style.top = '50px';
+        extensionWindow.style.right = '50px';
+        extensionWindow.style.left = 'auto';
+        extensionWindow.style.bottom = 'auto';
+        
+        console.log('🎯 Initial position set for dragging');
+        
         extensionWindow.addEventListener('click', (e) => {
           e.stopPropagation();
         });
+        
+        // Add drag functionality
+        this.makeDraggable(extensionWindow);
       }
     }
 
@@ -429,6 +800,41 @@
           this.overlay.parentNode.removeChild(this.overlay);
         }
       }, 200);
+    }
+
+    minimizeOverlay() {
+      console.log('🔽 Minimizing overlay...');
+      const extensionWindow = this.overlay.querySelector('.extension-window');
+      
+      // Hide the full overlay
+      this.overlay.style.display = 'none';
+      
+      // Create minimized logo
+      const minimizedLogo = document.createElement('div');
+      minimizedLogo.id = 'buzzer-minimized-logo';
+      minimizedLogo.innerHTML = 'N';
+      minimizedLogo.title = 'Click to restore AI Helper';
+      
+      // Add click handler to restore
+      minimizedLogo.addEventListener('click', () => this.restoreOverlay());
+      
+      document.body.appendChild(minimizedLogo);
+      console.log('✅ Overlay minimized');
+    }
+
+    restoreOverlay() {
+      console.log('🔼 Restoring overlay...');
+      
+      // Remove minimized logo
+      const minimizedLogo = document.getElementById('buzzer-minimized-logo');
+      if (minimizedLogo) {
+        minimizedLogo.remove();
+      }
+      
+      // Show the full overlay
+      this.overlay.style.display = 'flex';
+      
+      console.log('✅ Overlay restored');
     }
 
     setActiveTab(tab) {
@@ -463,7 +869,7 @@
       
       if (query) {
         console.log('Help triggered with query:', query);
-        this.addTranscriptionItem('User', query, 'user');
+        this.addTranscriptionItem('You', query, 'user');
         setTimeout(() => {
           this.addTranscriptionItem('AI', 'I can help you with that. Let me analyze the current conversation context...', 'ai');
         }, 1000);
@@ -483,24 +889,65 @@
       const list = this.overlay.querySelector('.transcription-list');
       if (!list) return;
 
-      const item = document.createElement('div');
-      item.className = `transcription-item ${type}`;
+      // Create chat message with WhatsApp-style bubble and sender label
+      const chatMessage = document.createElement('div');
+      chatMessage.className = `chat-message ${type}`;
       
       const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       
-      item.innerHTML = `
-        <div class="transcription-header">
-          <span class="speaker ${type}">${speaker}</span>
-          <span class="timestamp">${timestamp}</span>
+      // Add sender label for better WhatsApp feel
+      chatMessage.innerHTML = `
+        <div class="chat-bubble">
+          <div class="chat-sender">${speaker}</div>
+          <div class="chat-text">${text}</div>
         </div>
-        <div class="transcription-text">${text}</div>
       `;
 
-      list.appendChild(item);
+      // Append to bottom like WhatsApp (newest messages at bottom)
+      list.appendChild(chatMessage);
       
-      const content = this.overlay.querySelector('.panel-content');
-      if (content) {
-        content.scrollTop = content.scrollHeight;
+      // Auto-scroll to show newest message
+      list.scrollTop = list.scrollHeight;
+
+      // Store in transcription items array (add to beginning for newest-first order)
+      this.transcriptionItems.unshift({
+        id: Date.now() + Math.random(),
+        speaker,
+        text,
+        type,
+        timestamp
+      });
+    }
+
+    showInterimResult(speaker, text, type) {
+      console.log('⚡ Showing interim result:', text);
+      const list = this.overlay.querySelector('.transcription-list');
+      if (!list) return;
+
+      // Remove existing interim result
+      this.hideInterimResult();
+
+      // Create interim message with WhatsApp styling
+      const interimMessage = document.createElement('div');
+      interimMessage.className = `chat-message ${type} interim-message`;
+      interimMessage.id = 'interim-result';
+      
+      interimMessage.innerHTML = `
+        <div class="chat-bubble" style="opacity: 0.7; background: rgba(229,229,234,0.7) !important;">
+          <div class="chat-sender" style="opacity: 0.6;">${speaker}</div>
+          <div class="chat-text">${text}...</div>
+        </div>
+      `;
+
+      // Add at bottom like regular messages
+      list.appendChild(interimMessage);
+      list.scrollTop = list.scrollHeight;
+    }
+
+    hideInterimResult() {
+      const interimResult = this.overlay.querySelector('#interim-result');
+      if (interimResult) {
+        interimResult.remove();
       }
     }
 
@@ -529,15 +976,457 @@
       } else {
         contentArea.innerHTML = `
           <div class="transcription-list">
-            <!-- Transcription items will be added dynamically -->
           </div>
         `;
+        
+        // Re-add existing transcription items with WhatsApp styling
+        const list = this.overlay.querySelector('.transcription-list');
+        this.transcriptionItems.forEach(item => {
+          const chatMessage = document.createElement('div');
+          chatMessage.className = `chat-message ${item.type}`;
+          chatMessage.innerHTML = `
+            <div class="chat-bubble" data-sender="${item.sender}">
+              <div class="chat-text">${item.text}</div>
+            </div>
+          `;
+          list.appendChild(chatMessage);
+        });
+      }
+    }
+
+    initializeScreenSharing() {
+      // Initialize system audio transcription (screen sharing already done in popup)
+      console.log('🚀 Initializing system audio transcription...');
+      
+      this.isScreenSharing = true;
+      
+      // Just set up speech recognition, no screen sharing requests
+      this.initSystemSTT();
+      console.log('✅ System audio transcription ready');
+    }
+
+    stopSystemSTT() {
+      console.log('🛑 Stopping system STT...');
+      
+      // Stop speech recognition
+      if (this.systemRecognition) {
+        try {
+          this.systemRecognition.stop();
+          console.log('✅ System STT stopped');
+        } catch (e) {
+          console.log('System recognition already stopped');
+        }
+        this.systemRecognition = null;
+      }
+      
+      this.isScreenSharing = false;
+      console.log('✅ System audio transcription stopped');
+    }
+
+    stopScreenSharing() {
+      this.stopSystemSTT();
+      
+      if (this.screenStream) {
+        this.screenStream.getTracks().forEach(track => track.stop());
+        this.screenStream = null;
+      }
+      
+      if (this.systemRecognition) {
+        try {
+          this.systemRecognition.stop();
+        } catch (e) {
+          console.log('System recognition already stopped');
+        }
+      }
+      
+      this.isScreenSharing = false;
+      this.addTranscriptionItem('AI', 'Screen sharing ended.', 'ai');
+    }
+
+    async toggleUserMic() {
+      if (!this.isUserMicOn) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          this.userMicStream = stream;
+          this.isUserMicOn = true;
+          
+          // Update UI
+          this.updateNavItems();
+          
+          this.initUserSTT();
+        } catch (error) {
+          console.error('Microphone access failed:', error);
+          this.addTranscriptionItem('AI', 'Microphone access failed. Please allow microphone permissions.', 'ai');
+        }
+      } else {
+        if (this.userMicStream) {
+          this.userMicStream.getTracks().forEach(track => track.stop());
+          this.userMicStream = null;
+        }
+        
+        if (this.userRecognition) {
+          try {
+            this.userRecognition.stop();
+          } catch (e) {
+            console.log('User recognition already stopped');
+          }
+        }
+        
+        this.isUserMicOn = false;
+        
+        // Update UI
+        this.updateNavItems();
+      }
+    }
+
+    initSystemSTT() {
+      console.log('🔊 Initializing system audio transcription...');
+      
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.error('❌ Speech Recognition not supported');
+        this.addTranscriptionItem('System', 'Speech recognition not supported in this browser', 'ai');
+        return;
+      }
+      
+      // Only show one initialization message
+      if (!this.systemRecognition) {
+        this.addTranscriptionItem('System', '🎙️ System audio transcription initialized', 'ai');
+      }
+      
+      // Create speech recognition instance
+      this.systemRecognition = new SpeechRecognition();
+      this.systemRecognition.continuous = true;
+      this.systemRecognition.interimResults = true;
+      this.systemRecognition.lang = 'en-US';
+      
+      this.systemRecognition.onstart = () => {
+        console.log('🎤 System STT started listening');
+        // Don't add message here to avoid duplicates
+      };
+      
+      this.systemRecognition.onresult = (event) => {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript.trim();
+          
+          if (transcript) {
+            if (event.results[i].isFinal) {
+              console.log('✅ System audio final:', transcript);
+              this.addTranscriptionItem('Interviewer', transcript, 'interviewer');
+            } else {
+              console.log('⚡ System audio interim:', transcript);
+              this.showInterimResult('Interviewer', transcript, 'interviewer');
+            }
+          }
+        }
+      };
+      
+      this.systemRecognition.onerror = (event) => {
+        console.error('🚨 System STT error:', event.error);
+        if (event.error === 'not-allowed') {
+          this.addTranscriptionItem('System', 'Microphone permission needed for transcription', 'ai');
+        } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+          console.log(`STT Error: ${event.error}`);
+        }
+      };
+      
+      this.systemRecognition.onend = () => {
+        console.log('🔄 System STT ended, restarting...');
+        if (this.isScreenSharing) {
+          setTimeout(() => {
+            try {
+              this.systemRecognition.start();
+              console.log('🎤 System STT restarted');
+            } catch (e) {
+              console.log('⚠️ Failed to restart STT:', e.message);
+            }
+          }, 500);
+        }
+      };
+      
+      // Start speech recognition
+      try {
+        this.systemRecognition.start();
+        console.log('🚀 System STT started successfully!');
+      } catch (error) {
+        console.error('❌ Failed to start system STT:', error);
+        this.addTranscriptionItem('System', 'Failed to start audio transcription', 'ai');
+      }
+    }
+    
+
+
+    initUserSTT() {
+      console.log('🎤 Starting User STT...');
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.error('❌ Speech Recognition not supported');
+        return;
+      }
+
+      this.userRecognition = new SpeechRecognition();
+      this.userRecognition.continuous = true;
+      this.userRecognition.interimResults = true;
+      this.userRecognition.lang = 'en-US';
+      
+      this.userRecognition.onresult = (event) => {
+        console.log('🎙️ Candidate STT result received');
+        const last = event.results.length - 1;
+        const transcript = event.results[last][0].transcript;
+        
+        if (event.results[last].isFinal) {
+          console.log('✅ Candidate final transcript:', transcript);
+          this.addTranscriptionItem('You', transcript, 'user');
+        } else {
+          console.log('⚡ Candidate interim:', transcript);
+          this.showInterimResult('You', transcript, 'user');
+        }
+      };
+      
+      this.userRecognition.onerror = (event) => {
+        console.error('🚨 User STT error:', event.error);
+      };
+      
+      this.userRecognition.onend = () => {
+        console.log('🔄 User STT ended, restarting...');
+        if (this.isUserMicOn) {
+          setTimeout(() => {
+            try {
+              this.userRecognition.start();
+              console.log('🎤 User STT restarted');
+            } catch (e) {
+              console.log('Failed to restart user STT:', e);
+            }
+          }, 100);
+        }
+      };
+
+      try {
+        this.userRecognition.start();
+        console.log('🚀 User STT started successfully!');
+      } catch (error) {
+        console.error('Failed to start user STT:', error);
       }
     }
 
     updateUI() {
       this.updateHelpButton();
       this.updateContent();
+      this.updateNavItems();
+    }
+
+    updateNavItems() {
+      // Update microphone button
+      const micBtn = Array.from(this.overlay.querySelectorAll('.nav-item')).find(
+        item => item.querySelector('.nav-label').textContent === 'Mic'
+      );
+      const cameraBtn = this.overlay.querySelector('.camera-btn');
+      if (micBtn) {
+        micBtn.classList.toggle('active', this.isUserMicOn);
+      }
+      if (cameraBtn) {
+        cameraBtn.classList.toggle('active', this.isUserMicOn);
+      }
+
+      // Update input placeholder
+      const input = this.overlay.querySelector('.prompt-input');
+      if (input) {
+        if (this.isScreenSharing && this.isUserMicOn) {
+          input.placeholder = '🎤 Both audio sources active - Type additional prompts...';
+        } else if (this.isScreenSharing) {
+          input.placeholder = '🔊 System audio transcribing - Click mic for voice input...';
+        } else if (this.isUserMicOn) {
+          input.placeholder = '🎤 Mic active - Type additional prompts...';
+        } else {
+          input.placeholder = 'Start screen sharing and mic for transcription...';
+        }
+      }
+    }
+
+    makeDraggable(element) {
+      let isDragging = false;
+      let isResizing = false;
+      let startX, startY, startLeft, startTop, startWidth, startHeight;
+      
+      const onMouseDown = (e) => {
+        // Skip dragging if clicking on interactive elements
+        const interactive = e.target.closest('button, input, textarea, .nav-item, .tab-btn, .help-button');
+        if (interactive) return;
+        
+        const rect = element.getBoundingClientRect();
+        const isNearEdge = (
+          e.clientX > rect.right - 20 || 
+          e.clientY > rect.bottom - 20 ||
+          e.clientX < rect.left + 20 ||
+          e.clientY < rect.top + 20
+        );
+        
+        if (isNearEdge) {
+          console.log('� Starting resize...');
+          isResizing = true;
+          element.classList.add('resizing');
+        } else {
+          console.log('🖱️ Starting drag...');
+          isDragging = true;
+          element.classList.add('dragging');
+        }
+        
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = rect.left;
+        startTop = rect.top;
+        startWidth = rect.width;
+        startHeight = rect.height;
+        
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+        e.preventDefault();
+      };
+      
+      const onMouseMove = (e) => {
+        if (!isDragging && !isResizing) return;
+        
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        
+        if (isResizing) {
+          // Handle resizing
+          let newWidth = startWidth + deltaX;
+          let newHeight = startHeight + deltaY;
+          
+          // Set minimum and maximum sizes
+          newWidth = Math.max(300, Math.min(newWidth, window.innerWidth - startLeft));
+          newHeight = Math.max(200, Math.min(newHeight, window.innerHeight - startTop));
+          
+          element.style.width = newWidth + 'px';
+          element.style.height = newHeight + 'px';
+          
+          console.log('📏 Resizing to:', newWidth, 'x', newHeight);
+        } else {
+          // Handle dragging
+          let newLeft = startLeft + deltaX;
+          let newTop = startTop + deltaY;
+          
+          console.log('📍 Moving to:', newLeft, newTop, '(delta:', deltaX, deltaY, ')');
+          
+          // Very liberal boundaries - allow almost complete freedom
+          const minLeft = -element.offsetWidth + 50;
+          const maxLeft = window.innerWidth - 50;
+          const minTop = -50;
+          const maxTop = window.innerHeight - 50;
+          
+          newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
+          newTop = Math.max(minTop, Math.min(newTop, maxTop));
+          
+          // Force positioning
+          element.style.position = 'fixed';
+          element.style.left = newLeft + 'px';
+          element.style.top = newTop + 'px';
+          element.style.right = 'auto';
+          element.style.bottom = 'auto';
+          element.style.transform = 'none';
+        }
+      };
+      
+      const onMouseUp = () => {
+        if (isDragging) {
+          console.log('✅ Drag completed');
+          isDragging = false;
+          element.classList.remove('dragging');
+        }
+        if (isResizing) {
+          console.log('✅ Resize completed');
+          isResizing = false;
+          element.classList.remove('resizing');
+        }
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      };
+      
+      element.addEventListener('mousedown', onMouseDown);
+      
+      // Add hover effect for resize areas
+      element.addEventListener('mousemove', (e) => {
+        if (isDragging || isResizing) return;
+        
+        const rect = element.getBoundingClientRect();
+        const isNearEdge = (
+          e.clientX > rect.right - 20 || 
+          e.clientY > rect.bottom - 20 ||
+          e.clientX < rect.left + 20 ||
+          e.clientY < rect.top + 20
+        );
+        
+        if (isNearEdge) {
+          element.style.cursor = 'nw-resize';
+        } else {
+          element.style.cursor = 'grab';
+        }
+      });
+      
+      // Touch support for mobile
+      const onTouchStart = (e) => {
+        // Skip dragging if touching interactive elements
+        const interactive = e.target.closest('button, input, textarea, .nav-item, .tab-btn, .help-button');
+        if (interactive) return;
+        
+        const touch = e.touches[0];
+        console.log('👆 Touch drag starting...');
+        isDragging = true;
+        element.classList.add('dragging');
+        
+        startX = touch.clientX;
+        startY = touch.clientY;
+        
+        // Get current position using getBoundingClientRect for accuracy
+        const rect = element.getBoundingClientRect();
+        startLeft = rect.left;
+        startTop = rect.top;
+        
+        document.addEventListener('touchmove', onTouchMove, { passive: false });
+        document.addEventListener('touchend', onTouchEnd);
+        e.preventDefault();
+      };
+      
+      const onTouchMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - startX;
+        const deltaY = touch.clientY - startY;
+        
+        let newLeft = startLeft + deltaX;
+        let newTop = startTop + deltaY;
+        
+        console.log('👆 Touch moving to:', newLeft, newTop);
+        
+        // Very liberal boundaries
+        const minLeft = -element.offsetWidth + 50;
+        const maxLeft = window.innerWidth - 50;
+        const minTop = -50;
+        const maxTop = window.innerHeight - 50;
+        
+        newLeft = Math.max(minLeft, Math.min(newLeft, maxLeft));
+        newTop = Math.max(minTop, Math.min(newTop, maxTop));
+        
+        // Force positioning
+        element.style.position = 'fixed';
+        element.style.left = newLeft + 'px';
+        element.style.top = newTop + 'px';
+        element.style.right = 'auto';
+        element.style.bottom = 'auto';
+        element.style.transform = 'none';
+      };
+      
+      const onTouchEnd = () => {
+        isDragging = false;
+        element.classList.remove('dragging');
+        document.removeEventListener('touchmove', onTouchMove);
+        document.removeEventListener('touchend', onTouchEnd);
+      };
+      
+      element.addEventListener('touchstart', onTouchStart);
     }
   }
 

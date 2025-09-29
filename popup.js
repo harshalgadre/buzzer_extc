@@ -457,28 +457,48 @@ async function startAIHelper(sessionId, meetingUrl) {
   try {
     console.log('Starting AI Helper for session:', sessionId, 'Meeting URL:', meetingUrl);
     
-    // Store session info for AI helper
+    // First, request screen sharing
+    const stream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: true
+    });
+    
+    if (!stream) {
+      alert('Screen sharing is required to start AI Helper.');
+      return;
+    }
+    
+    // Store session info and screen stream info for AI helper
     await new Promise((resolve) => {
       chrome.storage.local.set({
         'currentSession': {
           id: sessionId,
           meetingUrl: meetingUrl,
-          startTime: Date.now()
+          startTime: Date.now(),
+          hasScreenShare: true
         }
       }, resolve);
     });
 
-    // Send message to background script to open AI helper
+    // Send message to background script to open AI helper with screen sharing already active
     chrome.runtime.sendMessage({
-      action: 'openAIHelper',
+      action: 'openAIHelperWithScreenShare',
       sessionId: sessionId,
-      meetingUrl: meetingUrl
+      meetingUrl: meetingUrl,
+      screenStream: true
     });
 
-    console.log('AI Helper request sent to background script');
+    console.log('AI Helper request sent to background script with screen sharing');
+    
+    // Close the popup after starting
+    window.close();
     
   } catch (error) {
     console.error('Failed to start AI Helper:', error);
-    alert('Failed to start AI Helper. Please check console for details.');
+    if (error.name === 'NotAllowedError') {
+      alert('Screen sharing permission denied. Please allow screen sharing to use AI Helper.');
+    } else {
+      alert('Failed to start AI Helper. Please try again.');
+    }
   }
 }

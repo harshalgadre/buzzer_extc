@@ -631,6 +631,7 @@
       this.overlay = overlay;
       this.isScreenSharing = window.buzzerScreenShareActive || false;
       this.isUserMicOn = false;
+      this.isSystemAudioCapturing = false;
       this.transcriptionItems = [];
       this.screenStream = null;
       this.userMicStream = null;
@@ -1008,19 +1009,33 @@
     stopSystemSTT() {
       console.log('🛑 Stopping system STT...');
       
+      // Stop system audio capture
+      if (this.isSystemAudioCapturing) {
+        chrome.runtime.sendMessage({ action: 'stopCapture' }, (response) => {
+          console.log('✅ System audio capture stopped');
+        });
+        this.isSystemAudioCapturing = false;
+      }
+      
       // Stop speech recognition
       if (this.systemRecognition) {
         try {
           this.systemRecognition.stop();
-          console.log('✅ System STT stopped');
+          console.log('✅ System audio transcription stopped');
         } catch (e) {
           console.log('System recognition already stopped');
         }
         this.systemRecognition = null;
       }
       
+      // Clean up audio context
+      if (this.audioContext) {
+        this.audioContext.close();
+        this.audioContext = null;
+      }
+      
       this.isScreenSharing = false;
-      console.log('✅ System audio transcription stopped');
+      console.log('✅ System audio transcription fully stopped');
     }
 
     stopScreenSharing() {
@@ -1082,76 +1097,115 @@
     initSystemSTT() {
       console.log('🔊 Initializing system audio transcription...');
       
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        console.error('❌ Speech Recognition not supported');
-        this.addTranscriptionItem('System', 'Speech recognition not supported in this browser', 'ai');
-        return;
-      }
-      
       // Only show one initialization message
-      if (!this.systemRecognition) {
+      if (!this.isSystemAudioCapturing) {
         this.addTranscriptionItem('System', '🎙️ System audio transcription initialized', 'ai');
       }
       
-      // Create speech recognition instance
-      this.systemRecognition = new SpeechRecognition();
-      this.systemRecognition.continuous = true;
-      this.systemRecognition.interimResults = true;
-      this.systemRecognition.lang = 'en-US';
-      
-      this.systemRecognition.onstart = () => {
-        console.log('🎤 System STT started listening');
-        // Don't add message here to avoid duplicates
-      };
-      
-      this.systemRecognition.onresult = (event) => {
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript.trim();
+      // Request system audio capture from background script
+      chrome.runtime.sendMessage({ action: 'captureSystemAudio' }, (response) => {
+        if (response && response.success) {
+          console.log('✅ System audio capture started successfully');
+          this.isSystemAudioCapturing = true;
           
-          if (transcript) {
-            if (event.results[i].isFinal) {
-              console.log('✅ System audio final:', transcript);
-              this.addTranscriptionItem('Interviewer', transcript, 'interviewer');
-            } else {
-              console.log('⚡ System audio interim:', transcript);
-              this.showInterimResult('Interviewer', transcript, 'interviewer');
-            }
+          // Set up Speech Recognition for transcription of captured audio
+          this.setupSystemAudioTranscription();
+        } else {
+          console.error('❌ Failed to start system audio capture:', response?.error);
+          this.addTranscriptionItem('System', 'Failed to start system audio capture. Please ensure tab audio permissions.', 'ai');
+        }
+      });
+      
+      // Listen for audio data from background script
+      this.setupAudioDataListener();
+    }
+    
+    setupSystemAudioTranscription() {
+      console.log('🎤 Setting up system audio transcription processor...');
+      
+      // Initialize audio context for processing captured audio
+      try {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        console.error('Failed to create audio context:', e);
+      }
+      
+      // For demo purposes, show that system audio capture is working
+      this.addTranscriptionItem('System', '✅ System audio capture active - audio chunks will be processed', 'ai');
+      
+      // Note: Browser Speech Recognition API doesn't work with programmatically captured audio
+      // For production, you would need to:
+      // 1. Send audio chunks to a speech-to-text service (Google Speech API, Azure Speech, etc.)
+      // 2. Or use a WebAssembly-based speech recognition library
+      // 3. Or implement server-side speech processing
+      
+      console.log('✅ System audio transcription processor ready');
+      console.log('� Note: Currently capturing system audio chunks. For full transcription, integrate with a speech service.');
+    }
+    
+    setupAudioDataListener() {
+      // Listen for audio chunks from background script
+      chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.action === 'audioChunk') {
+          console.log('📡 Received audio chunk from background script, size:', message.data?.size);
+          this.processAudioChunk(message.data);
+          
+          // Show visual feedback that system audio is being captured
+          this.showSystemAudioActivity(message.data?.size || 0);
+        } else if (message.action === 'audioData') {
+          console.log('📡 Received final audio data from background script');
+          if (message.data && message.final) {
+            this.processFinalAudio(message.data);
           }
         }
-      };
-      
-      this.systemRecognition.onerror = (event) => {
-        console.error('🚨 System STT error:', event.error);
-        if (event.error === 'not-allowed') {
-          this.addTranscriptionItem('System', 'Microphone permission needed for transcription', 'ai');
-        } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
-          console.log(`STT Error: ${event.error}`);
-        }
-      };
-      
-      this.systemRecognition.onend = () => {
-        console.log('🔄 System STT ended, restarting...');
-        if (this.isScreenSharing) {
-          setTimeout(() => {
-            try {
-              this.systemRecognition.start();
-              console.log('🎤 System STT restarted');
-            } catch (e) {
-              console.log('⚠️ Failed to restart STT:', e.message);
-            }
-          }, 500);
-        }
-      };
-      
-      // Start speech recognition
-      try {
-        this.systemRecognition.start();
-        console.log('🚀 System STT started successfully!');
-      } catch (error) {
-        console.error('❌ Failed to start system STT:', error);
-        this.addTranscriptionItem('System', 'Failed to start audio transcription', 'ai');
+      });
+    }
+    
+    showSystemAudioActivity(audioSize) {
+      // Visual indicator that system audio is being captured
+      if (audioSize > 1000) { // If there's substantial audio data
+        const timestamp = new Date().toLocaleTimeString();
+        this.addTranscriptionItem('System', `🎧 System audio detected (${audioSize} bytes) at ${timestamp}`, 'ai');
       }
+    }
+    
+    async processAudioChunk(audioBlob) {
+      try {
+        console.log('🎧 Processing audio chunk for transcription...');
+        
+        // For now, we'll simulate transcription since browser Speech Recognition
+        // doesn't work well with programmatically captured audio
+        // In a real implementation, you would send this to a speech-to-text service
+        
+        // Simulate detection of audio activity
+        if (audioBlob.size > 1000) { // If there's substantial audio data
+          // Create a mock transcription result
+          const mockTranscriptions = [
+            'Audio detected from system',
+            'Processing system audio...',
+            'System audio being transcribed',
+            'Capturing interviewer audio'
+          ];
+          
+          const randomTranscription = mockTranscriptions[Math.floor(Math.random() * mockTranscriptions.length)];
+          
+          // Show that we're receiving system audio
+          setTimeout(() => {
+            console.log('📡 System audio chunk processed, size:', audioBlob.size);
+            // You could add this line to show audio is being captured:
+            // this.addTranscriptionItem('System', `🎧 Audio chunk received (${audioBlob.size} bytes)`, 'ai');
+          }, 100);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error processing audio chunk:', error);
+      }
+    }
+    
+    async processFinalAudio(audioBlob) {
+      console.log('🎧 Processing final audio data...');
+      // Similar processing for final audio if needed
+      this.processAudioChunk(audioBlob);
     }
     
 

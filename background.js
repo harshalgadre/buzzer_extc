@@ -42,35 +42,50 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
         tabCaptureStream = stream;
         audioChunks = [];
         
-        mediaRecorder = new MediaRecorder(stream);
+        mediaRecorder = new MediaRecorder(stream, {
+          mimeType: 'audio/webm;codecs=opus'
+        });
         
+        // Process audio chunks every 3 seconds for continuous transcription
         mediaRecorder.ondataavailable = function(event) {
           if (event.data.size > 0) {
             audioChunks.push(event.data);
+            
+            // Create blob from current chunk for processing
+            const audioBlob = new Blob([event.data], { type: 'audio/webm' });
+            
+            // Send audio chunk to content script for processing
+            chrome.runtime.sendMessage({
+              action: 'audioChunk',
+              data: audioBlob
+            });
           }
         };
         
         mediaRecorder.onstop = function() {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          
-          // Convert blob to array buffer to send to popup
-          const reader = new FileReader();
-          reader.onload = function() {
+          // Final processing when recording stops
+          if (audioChunks.length > 0) {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            
             chrome.runtime.sendMessage({
               action: 'audioData',
-              data: reader.result
+              data: audioBlob,
+              final: true
             });
-          };
-          reader.readAsArrayBuffer(audioBlob);
+          }
           
           // Clean up
           if (tabCaptureStream) {
             tabCaptureStream.getTracks().forEach(track => track.stop());
             tabCaptureStream = null;
           }
+          audioChunks = [];
         };
         
-        mediaRecorder.start();
+        // Start recording with 3-second chunks for continuous processing
+        mediaRecorder.start(3000); // 3-second timeslices
+        console.log('✅ System audio capture started with continuous processing');
+        
         sendResponse({ success: true });
       } else {
         sendResponse({ success: false, error: 'Failed to capture tab audio' });

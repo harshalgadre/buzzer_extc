@@ -21,6 +21,13 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     return true;
   }
 
+  // Handle AI helper window open request with screen sharing already active
+  if (message.action === 'openAIHelperWithScreenShare') {
+    openAIHelperWindow(true);
+    sendResponse({ success: true });
+    return true;
+  }
+
   // Handle manual AI helper trigger from content script
   if (message.action === 'showAIHelper') {
     console.log('Manual AI helper trigger received');
@@ -89,7 +96,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
 });
 
 // Function to open AI Helper window
-async function openAIHelperWindow() {
+async function openAIHelperWindow(hasScreenShare = false) {
   try {
     // Get the active tab
     const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -127,7 +134,15 @@ async function openAIHelperWindow() {
       files: ['ai-helper-window/styles.css']
     });
 
-    // Then inject the HTML and JavaScript
+    // Then inject the HTML and JavaScript with screen sharing state
+    await chrome.scripting.executeScript({
+      target: { tabId: activeTab.id },
+      func: (hasScreenShare) => {
+        window.buzzerScreenShareActive = hasScreenShare;
+      },
+      args: [hasScreenShare]
+    });
+    
     await chrome.scripting.executeScript({
       target: { tabId: activeTab.id },
       files: ['ai-helper-window/inject-overlay.js']

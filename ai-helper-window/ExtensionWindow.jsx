@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 
 const ExtensionWindow = () => {
   const [activeTab, setActiveTab] = useState('transcription');
@@ -6,6 +6,16 @@ const ExtensionWindow = () => {
   const [calloutVisible, setCalloutVisible] = useState(true);
   const [transcriptionItems, setTranscriptionItems] = useState([]);
   const [inputValue, setInputValue] = useState('');
+  
+  // Audio states (screen sharing handled before overlay opens)
+  const [isUserMicOn, setIsUserMicOn] = useState(false);
+  const [isSystemAudioOn, setIsSystemAudioOn] = useState(false);
+  
+  // Refs for media streams and recognition
+  const userMicStreamRef = useRef(null);
+  const systemRecognitionRef = useRef(null);
+  const userRecognitionRef = useRef(null);
+  const transcriptionListRef = useRef(null);
 
   const topics = [
     'Technical Skills',
@@ -25,13 +35,20 @@ const ExtensionWindow = () => {
 
   const addTranscriptionItem = useCallback((speaker, text, type) => {
     const newItem = {
-      id: Date.now(),
+      id: Date.now() + Math.random(),
       speaker,
       text,
       type,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
     setTranscriptionItems(prev => [...prev, newItem]);
+    
+    // Auto-scroll to bottom
+    setTimeout(() => {
+      if (transcriptionListRef.current) {
+        transcriptionListRef.current.scrollTop = transcriptionListRef.current.scrollHeight;
+      }
+    }, 100);
   }, []);
 
   const triggerHelp = useCallback(() => {
@@ -57,8 +74,141 @@ const ExtensionWindow = () => {
     }
   }, [triggerHelp]);
 
+  // Initialize speech recognition
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      // System audio recognition (for interviewer)
+      const systemRecognition = new SpeechRecognition();
+      systemRecognition.continuous = true;
+      systemRecognition.interimResults = false;
+      systemRecognition.lang = 'en-US';
+      
+      systemRecognition.onresult = (event) => {
+        const lastResult = event.results[event.results.length - 1];
+        if (lastResult.isFinal) {
+          const transcript = lastResult[0].transcript.trim();
+          if (transcript) {
+            addTranscriptionItem('Interviewer', transcript, 'interviewer');
+          }
+        }
+      };
+      
+      systemRecognition.onerror = (event) => {
+        console.error('System STT error:', event.error);
+      };
+      
+      systemRecognitionRef.current = systemRecognition;
+
+      // User microphone recognition
+      const userRecognition = new SpeechRecognition();
+      userRecognition.continuous = true;
+      userRecognition.interimResults = false;
+      userRecognition.lang = 'en-US';
+      
+      userRecognition.onresult = (event) => {
+        const lastResult = event.results[event.results.length - 1];
+        if (lastResult.isFinal) {
+          const transcript = lastResult[0].transcript.trim();
+          if (transcript) {
+            addTranscriptionItem('User', transcript, 'user');
+          }
+        }
+      };
+      
+      userRecognition.onerror = (event) => {
+        console.error('User STT error:', event.error);
+      };
+      
+      userRecognitionRef.current = userRecognition;
+    }
+
+    return () => {
+      stopAllCapture();
+    };
+  }, [addTranscriptionItem]);
+
+  // Initialize system audio capture (assuming screen sharing is already active)
+  const initializeSystemAudio = useCallback(async () => {
+    try {
+      // System audio should already be available since screen sharing happened before overlay
+      if (systemRecognitionRef.current) {
+        setIsSystemAudioOn(true);
+        systemRecognitionRef.current.start();
+        addTranscriptionItem('AI', 'System audio transcription active.', 'ai');
+      }
+    } catch (error) {
+      console.error('System audio initialization failed:', error);
+      addTranscriptionItem('AI', 'System audio initialization failed.', 'ai');
+    }
+  }, [addTranscriptionItem]);
+
+  // Toggle user microphone
+  const toggleUserMic = useCallback(async () => {
+    if (!isUserMicOn) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        userMicStreamRef.current = stream;
+        setIsUserMicOn(true);
+        
+        if (userRecognitionRef.current) {
+          userRecognitionRef.current.start();
+        }
+        
+        addTranscriptionItem('AI', 'Started capturing your microphone audio.', 'ai');
+      } catch (error) {
+        console.error('Microphone access failed:', error);
+        addTranscriptionItem('AI', 'Microphone access failed. Please allow microphone permissions.', 'ai');
+      }
+    } else {
+      if (userMicStreamRef.current) {
+        userMicStreamRef.current.getTracks().forEach(track => track.stop());
+        userMicStreamRef.current = null;
+      }
+      
+      if (userRecognitionRef.current) {
+        try {
+          userRecognitionRef.current.stop();
+        } catch (e) {
+          console.log('User recognition already stopped');
+        }
+      }
+      
+      setIsUserMicOn(false);
+      addTranscriptionItem('AI', 'Stopped microphone capture.', 'ai');
+    }
+  }, [isUserMicOn, addTranscriptionItem]);
+
+  // Stop all capture
+  const stopAllCapture = useCallback(() => {
+    if (userMicStreamRef.current) {
+      userMicStreamRef.current.getTracks().forEach(track => track.stop());
+      userMicStreamRef.current = null;
+    }
+    
+    if (userRecognitionRef.current) {
+      try {
+        userRecognitionRef.current.stop();
+      } catch (e) {
+        console.log('User recognition already stopped');
+      }
+    }
+    
+    if (systemRecognitionRef.current) {
+      try {
+        systemRecognitionRef.current.stop();
+      } catch (e) {
+        console.log('System recognition already stopped');
+      }
+    }
+    
+    setIsUserMicOn(false);
+    setIsSystemAudioOn(false);
+  }, []);
+
   return (
     <div className="extension-window" role="main">
+
       {/* Left Sidebar */}
       <div className="left-sidebar" role="navigation" aria-label="Tool controls">
         <div className="sidebar-top">
@@ -82,14 +232,31 @@ const ExtensionWindow = () => {
         </div>
 
         <nav className="sidebar-nav" role="tablist">
-          {['Theme', 'Font', 'Bullet', 'Detail', 'Translate', 'Auto'].map((item, index) => (
+          {/* Microphone Button */}
+          <button 
+            className={`nav-item ${isUserMicOn ? 'active' : ''}`} 
+            role="tab" 
+            aria-selected={isUserMicOn}
+            onClick={toggleUserMic}
+            title={isUserMicOn ? 'Stop Microphone' : 'Start Microphone'}
+          >
+            <div className="nav-icon">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+                <rect x="7" y="2" width="4" height="8" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                <path d="M4 9v1a5 5 0 0 0 10 0V9M9 14v2M7 16h4" stroke="currentColor" strokeWidth="1.5"/>
+                {isUserMicOn && <circle cx="15" cy="4" r="2" fill="#ff0000"/>}
+              </svg>
+            </div>
+            <span className="nav-label">Mic</span>
+          </button>
+
+          {['Theme', 'Font', 'Bullet', 'Detail'].map((item, index) => (
             <button key={item} className="nav-item" role="tab" aria-selected="false">
-              <div className={`nav-icon ${['Bullet', 'Detail', 'Auto'].includes(item) ? 'crown-badge' : ''}`}>
+              <div className={`nav-icon ${['Bullet', 'Detail'].includes(item) ? 'crown-badge' : ''}`}>
                 <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-                  {/* Icon paths would go here - simplified for example */}
                   <circle cx="9" cy="9" r="7"/>
                 </svg>
-                {['Bullet', 'Detail', 'Auto'].includes(item) && (
+                {['Bullet', 'Detail'].includes(item) && (
                   <div className="crown">
                     <svg width="12" height="8" viewBox="0 0 12 8" fill="#FFD700">
                       <path d="M6 1l1.5 3h3l-2.5 2 1 3-3-2-3 2 1-3-2.5-2h3L6 1z"/>
@@ -159,16 +326,27 @@ const ExtensionWindow = () => {
               ))}
             </div>
           ) : (
-            <div className="transcription-list">
+            <div className="transcription-list" ref={transcriptionListRef}>
               {transcriptionItems.map((item) => (
-                <div key={item.id} className={`transcription-item ${item.type}`}>
-                  <div className="transcription-header">
-                    <span className={`speaker ${item.type}`}>{item.speaker}</span>
-                    <span className="timestamp">{item.timestamp}</span>
+                <div key={item.id} className={`chat-message ${item.type}`}>
+                  <div className="chat-bubble">
+                    <div className="chat-header">
+                      <span className={`speaker ${item.type}`}>{item.speaker}</span>
+                      <span className="timestamp">{item.timestamp}</span>
+                    </div>
+                    <div className="chat-text">{item.text}</div>
                   </div>
-                  <div className="transcription-text">{item.text}</div>
                 </div>
               ))}
+              {transcriptionItems.length === 0 && (
+                <div className="empty-transcription">
+                  <p>System audio is active. Click Mic to add voice transcription.</p>
+                  <p className="status-info">
+                    System Audio: {isSystemAudioOn ? '🟢 Active' : '🔴 Inactive'} | 
+                    Mic: {isUserMicOn ? '🟢 Active' : '🔴 Inactive'}
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -181,15 +359,25 @@ const ExtensionWindow = () => {
       {/* Bottom Bar */}
       <div className="bottom-bar">
         <div className="input-section">
-          <button className="camera-btn" aria-label="Camera options">
+          <button 
+            className={`camera-btn ${isUserMicOn ? 'active' : ''}`} 
+            aria-label="Toggle microphone"
+            onClick={toggleUserMic}
+          >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M0 5a2 2 0 0 1 2-2h7.5a2 2 0 0 1 1.983 1.738l3.11-1.382A1 1 0 0 1 16 4.269v7.462a1 1 0 0 1-1.406.913l-3.111-1.382A2 2 0 0 1 9.5 13H2a2 2 0 0 1-2-2V5z"/>
+              <rect x="6" y="1" width="4" height="8" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+              <path d="M3 8v1a5 5 0 0 0 10 0V8M8 13v2M6 15h4" stroke="currentColor" strokeWidth="1.5"/>
+              {isUserMicOn && <circle cx="13" cy="3" r="2" fill="#ff0000"/>}
             </svg>
           </button>
           <input 
             type="text" 
             className="prompt-input" 
-            placeholder="Type or OCR quick prompt. Please wait until a meeting host brings you in."
+            placeholder={
+              isSystemAudioOn || isUserMicOn 
+                ? "STT is active. Type additional prompts here..." 
+                : "System audio ready. Click Mic to add voice input..."
+            }
             aria-label="AI prompt input"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -203,6 +391,18 @@ const ExtensionWindow = () => {
         </button>
         
         <div className="bottom-right">
+          <div className="status-indicators">
+            {isSystemAudioOn && (
+              <span className="status-badge system">
+                � System
+              </span>
+            )}
+            {isUserMicOn && (
+              <span className="status-badge mic">
+                🎤 Mic
+              </span>
+            )}
+          </div>
           <label className="checkbox-label">
             <input type="checkbox" className="hide-conversation" />
             <span>Hide my conversation</span>

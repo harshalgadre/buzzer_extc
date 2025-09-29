@@ -3,6 +3,163 @@ let mediaRecorder = null;
 let audioChunks = [];
 let aiHelperWindowId = null;
 
+// Utility function to get aspect ratio
+function getAspectRatio(width, height) {
+  return width / height;
+}
+
+// Enhanced tab capture function with configurable resolutions
+function captureTabUsingTabCapture(resolutions = null, enableSpeakers = true) {
+  // Default resolutions if not provided
+  const defaultResolutions = {
+    maxWidth: 1920,
+    maxHeight: 1080,
+    minWidth: 640,
+    minHeight: 480
+  };
+  
+  const finalResolutions = resolutions || defaultResolutions;
+
+  chrome.tabs.query({
+    active: true,
+    currentWindow: true
+  }, function(arrayOfTabs) {
+    if (chrome.runtime.lastError) {
+      console.error('Error querying tabs:', chrome.runtime.lastError);
+      return;
+    }
+
+    const activeTab = arrayOfTabs[0];
+    const activeTabId = activeTab.id;
+
+    const constraints = {
+      video: true,
+      videoConstraints: {
+        mandatory: {
+          chromeMediaSource: 'tab',
+          maxWidth: finalResolutions.maxWidth,
+          maxHeight: finalResolutions.maxHeight,
+          minWidth: finalResolutions.minWidth,
+          minHeight: finalResolutions.minHeight,
+          minAspectRatio: getAspectRatio(finalResolutions.maxWidth, finalResolutions.maxHeight),
+          maxAspectRatio: getAspectRatio(finalResolutions.maxWidth, finalResolutions.maxHeight),
+          minFrameRate: 64,
+          maxFrameRate: 128
+        }
+      }
+    };
+
+    if (enableSpeakers) {
+      constraints.audio = true;
+      constraints.audioConstraints = {
+        mandatory: {
+          echoCancellation: true
+        },
+        optional: [{
+          googDisableLocalEcho: false // https://www.chromestatus.com/feature/5056629556903936
+        }]
+      };
+    }
+
+    // chrome.tabCapture.onStatusChanged.addListener(function(event) { /* event.status */ });
+
+    chrome.tabCapture.capture(constraints, function(stream) {
+      if (chrome.runtime.lastError) {
+        console.error('Tab capture error:', chrome.runtime.lastError);
+        // Notify content script of error
+        chrome.tabs.sendMessage(activeTabId, {
+          action: 'tabCaptureError',
+          error: chrome.runtime.lastError.message
+        });
+        return;
+      }
+      
+      gotTabCaptureStream(stream, constraints, activeTabId);
+    });
+  });
+}
+
+// Handle the captured tab stream
+function gotTabCaptureStream(stream, constraints, tabId) {
+  if (!stream) {
+    console.error('No stream received from tab capture');
+    chrome.tabs.sendMessage(tabId, {
+      action: 'tabCaptureError',
+      error: 'No stream received'
+    });
+    return;
+  }
+
+  console.log('Tab capture stream received:', stream);
+  tabCaptureStream = stream;
+
+  // Get audio tracks for processing
+  const audioTracks = stream.getAudioTracks();
+  if (audioTracks.length > 0) {
+    console.log('Audio tracks found:', audioTracks.length);
+    
+    // Initialize media recorder for audio processing
+    try {
+      mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      
+      audioChunks = [];
+      
+      mediaRecorder.ondataavailable = function(event) {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+          
+          // Send audio chunk to content script for processing
+          chrome.tabs.sendMessage(tabId, {
+            action: 'systemAudioChunk',
+            data: event.data
+          });
+        }
+      };
+      
+      mediaRecorder.onstop = function() {
+        console.log('Media recorder stopped');
+      };
+      
+      // Start recording with 1-second chunks for real-time processing
+      mediaRecorder.start(1000);
+      
+      // Notify content script that capture started successfully
+      chrome.tabs.sendMessage(tabId, {
+        action: 'tabCaptureStarted',
+        hasAudio: audioTracks.length > 0,
+        hasVideo: stream.getVideoTracks().length > 0
+      });
+      
+    } catch (error) {
+      console.error('Failed to initialize MediaRecorder:', error);
+      chrome.tabs.sendMessage(tabId, {
+        action: 'tabCaptureError',
+        error: 'Failed to initialize audio recording'
+      });
+    }
+  } else {
+    console.log('No audio tracks in stream');
+    chrome.tabs.sendMessage(tabId, {
+      action: 'tabCaptureError',
+      error: 'No audio tracks found in tab'
+    });
+  }
+
+  // Handle stream end
+  stream.addEventListener('ended', () => {
+    console.log('Tab capture stream ended');
+    tabCaptureStream = null;
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
+    chrome.tabs.sendMessage(tabId, {
+      action: 'tabCaptureEnded'
+    });
+  });
+}
+
 // Handle messages from popup and content scripts
 chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   
@@ -32,6 +189,32 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
   if (message.action === 'showAIHelper') {
     console.log('Manual AI helper trigger received');
     openAIHelperWindow();
+    sendResponse({ success: true });
+    return true;
+  }
+
+  // Handle enhanced tab capture request
+  if (message.action === 'startTabCapture') {
+    console.log('Starting enhanced tab capture');
+    const resolutions = message.resolutions || null;
+    const enableSpeakers = message.enableSpeakers !== false; // default to true
+    captureTabUsingTabCapture(resolutions, enableSpeakers);
+    sendResponse({ success: true });
+    return true;
+  }
+
+  // Handle stop tab capture request
+  if (message.action === 'stopTabCapture') {
+    console.log('Stopping tab capture');
+    if (tabCaptureStream) {
+      tabCaptureStream.getTracks().forEach(track => {
+        track.stop();
+      });
+      tabCaptureStream = null;
+    }
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+    }
     sendResponse({ success: true });
     return true;
   }

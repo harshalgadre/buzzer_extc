@@ -6,10 +6,24 @@ const ExtensionWindow = () => {
   const [calloutVisible, setCalloutVisible] = useState(true);
   const [transcriptionItems, setTranscriptionItems] = useState([]);
   const [inputValue, setInputValue] = useState('');
+  const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [currentAnswer, setCurrentAnswer] = useState(null);
   
   // Audio states (screen sharing handled before overlay opens)
   const [isUserMicOn, setIsUserMicOn] = useState(false);
   const [isSystemAudioOn, setIsSystemAudioOn] = useState(false);
+
+  // Question detection regex patterns
+  const questionPatterns = [
+    /\b(?:what|how|why|when|where|who|which|can you|could you|would you|do you|did you|will you|is|are|am)\b.*\?/i,
+    /\b(?:explain|describe|tell me|show me|help me|teach me)\b.*/i,
+    /\b(?:what is|how to|why does|when did|where can|who is|which one)\b.*/i,
+    /\b(?:javascript|html|css|nodejs|node\.?js|react|angular|vue|python|java|c\+\+|programming|coding|development)\b.*[\?]*$/i
+  ];
+
+  // Gemini API configuration
+  const geminiApiKey = 'AIzaSyALmZY3vJq-4PFIUaHl4ZZsYGXdMkI7fCM'; // Replace with your actual API key
+  const geminiApiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
   
   // Refs for media streams and recognition
   const userMicStreamRef = useRef(null);
@@ -24,6 +38,70 @@ const ExtensionWindow = () => {
     'Team Collaboration',
     'Leadership Examples'
   ];
+
+  // Detect if text contains a question
+  const isQuestion = useCallback((text) => {
+    return questionPatterns.some(pattern => pattern.test(text.trim()));
+  }, [questionPatterns]);
+
+  // Process detected question with Gemini AI
+  const processQuestion = useCallback(async (question) => {
+    try {
+      console.log('Processing question with Gemini:', question);
+      
+      const response = await fetch(`${geminiApiUrl}?key=${geminiApiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `You are an AI assistant helping with technical questions. Please provide a clear, concise answer to this question: "${question}". Keep the response under 200 words and focus on practical, actionable information.`
+            }]
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const answer = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      if (answer) {
+        setCurrentQuestion(question);
+        setCurrentAnswer(answer);
+        return answer;
+      } else {
+        throw new Error('No answer received from API');
+      }
+    } catch (error) {
+      console.error('Error processing question:', error);
+      const fallbackAnswer = getFallbackAnswer(question);
+      setCurrentQuestion(question);
+      setCurrentAnswer(fallbackAnswer);
+      return fallbackAnswer;
+    }
+  }, [geminiApiKey, geminiApiUrl]);
+
+  // Fallback answers for when API fails
+  const getFallbackAnswer = useCallback((question) => {
+    const lowerQ = question.toLowerCase();
+    
+    if (lowerQ.includes('javascript')) {
+      return 'JavaScript is a dynamic programming language primarily used for web development. It enables interactive web pages and is an essential part of modern web applications alongside HTML and CSS.';
+    } else if (lowerQ.includes('html')) {
+      return 'HTML (HyperText Markup Language) is the standard markup language for creating web pages. It describes the structure and content of web pages using elements and tags.';
+    } else if (lowerQ.includes('nodejs') || lowerQ.includes('node.js')) {
+      return 'Node.js is a JavaScript runtime environment that allows you to run JavaScript on the server side. It\'s commonly used for building scalable web applications and APIs.';
+    } else if (lowerQ.includes('css')) {
+      return 'CSS (Cascading Style Sheets) is a stylesheet language used to describe the presentation and styling of HTML documents, controlling layout, colors, fonts, and visual appearance.';
+    } else {
+      return 'I\'d be happy to help with that question. Could you provide more specific details so I can give you a more targeted answer?';
+    }
+  }, []);
 
   const handleTabClick = useCallback((tab) => {
     setActiveTab(tab);
@@ -43,20 +121,37 @@ const ExtensionWindow = () => {
     };
     setTranscriptionItems(prev => [...prev, newItem]);
     
+    // Auto-detect questions from transcription and process with AI
+    if (type === 'user' || type === 'interviewer') {
+      if (isQuestion(text)) {
+        console.log('Question detected in transcription:', text);
+        setTimeout(() => {
+          processQuestion(text);
+        }, 500); // Small delay to allow transcription to complete
+      }
+    }
+    
     // Auto-scroll to bottom
     setTimeout(() => {
       if (transcriptionListRef.current) {
         transcriptionListRef.current.scrollTop = transcriptionListRef.current.scrollHeight;
       }
     }, 100);
-  }, []);
+  }, [isQuestion, processQuestion]);
 
   const triggerHelp = useCallback(() => {
     if (inputValue.trim()) {
       addTranscriptionItem('User', inputValue.trim(), 'user');
-      setTimeout(() => {
-        addTranscriptionItem('AI', 'I can help you with that. Let me analyze the current conversation context...', 'ai');
-      }, 1000);
+      
+      // Check if it's a question and process with AI
+      if (isQuestion(inputValue.trim())) {
+        processQuestion(inputValue.trim());
+      } else {
+        setTimeout(() => {
+          addTranscriptionItem('AI', 'I can help you with that. Let me analyze the current conversation context...', 'ai');
+        }, 1000);
+      }
+      
       setInputValue('');
     } else {
       addTranscriptionItem('AI', 'I\'m ready to help! You can ask me questions about the interview or request specific assistance.', 'ai');
@@ -65,7 +160,7 @@ const ExtensionWindow = () => {
     if (helpCount > 0) {
       setHelpCount(prev => prev - 1);
     }
-  }, [inputValue, helpCount, addTranscriptionItem]);
+  }, [inputValue, helpCount, addTranscriptionItem, isQuestion, processQuestion]);
 
   const handleKeyDown = useCallback((e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -206,6 +301,11 @@ const ExtensionWindow = () => {
     setIsSystemAudioOn(false);
   }, []);
 
+  const clearQuestionAnswer = useCallback(() => {
+    setCurrentQuestion(null);
+    setCurrentAnswer(null);
+  }, []);
+
   return (
     <div className="extension-window" role="main">
 
@@ -273,16 +373,34 @@ const ExtensionWindow = () => {
       {/* Main Canvas */}
       <div className="main-canvas">
         <div className="illustration-container">
-          <svg className="main-illustration" width="400" height="300" viewBox="0 0 400 300" fill="none">
-            {/* Illustration SVG content */}
-            <ellipse cx="200" cy="250" rx="60" ry="20" fill="#3a3a3a" opacity="0.3"/>
-            <rect x="120" y="180" width="40" height="80" rx="8" fill="#666" opacity="0.6"/>
-            <rect x="240" y="180" width="40" height="80" rx="8" fill="#666" opacity="0.6"/>
-            <circle cx="200" cy="140" r="25" fill="#d4a574" opacity="0.7"/>
-            <rect x="180" y="165" width="40" height="60" rx="15" fill="#87ceeb" opacity="0.7"/>
-            <ellipse cx="100" cy="220" rx="25" ry="15" fill="#8b4513" opacity="0.6"/>
-            <ellipse cx="300" cy="220" rx="20" ry="12" fill="#daa520" opacity="0.6"/>
-          </svg>
+          {currentQuestion && currentAnswer ? (
+            <div className="qa-display">
+              <div className="qa-question">
+                <div className="qa-label">Question:</div>
+                <div className="qa-text">{currentQuestion}</div>
+              </div>
+              <div className="qa-answer">
+                <div className="qa-label">AI Answer:</div>
+                <div className="qa-text">{currentAnswer}</div>
+              </div>
+              <button className="qa-close" onClick={clearQuestionAnswer}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                </svg>
+              </button>
+            </div>
+          ) : (
+            <svg className="main-illustration" width="400" height="300" viewBox="0 0 400 300" fill="none">
+              {/* Illustration SVG content */}
+              <ellipse cx="200" cy="250" rx="60" ry="20" fill="#3a3a3a" opacity="0.3"/>
+              <rect x="120" y="180" width="40" height="80" rx="8" fill="#666" opacity="0.6"/>
+              <rect x="240" y="180" width="40" height="80" rx="8" fill="#666" opacity="0.6"/>
+              <circle cx="200" cy="140" r="25" fill="#d4a574" opacity="0.7"/>
+              <rect x="180" y="165" width="40" height="60" rx="15" fill="#87ceeb" opacity="0.7"/>
+              <ellipse cx="100" cy="220" rx="25" ry="15" fill="#8b4513" opacity="0.6"/>
+              <ellipse cx="300" cy="220" rx="20" ry="12" fill="#daa520" opacity="0.6"/>
+            </svg>
+          )}
         </div>
       </div>
 

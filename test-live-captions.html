@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Caption Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .caption-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .caption-text {
+            font-size: 18px;
+            line-height: 1.5;
+            color: #333;
+        }
+        .iOzk7 {
+            font-weight: bold;
+            color: #10b981;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #transcription-output {
+            border: 1px solid #ddd;
+            padding: 15px;
+            min-height: 100px;
+            background-color: #fff;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Live Caption Test Page</h1>
+    
+    <div class="caption-container">
+        <h2>Simulated Live Captions</h2>
+        <div class="caption-text iOzk7" id="live-caption">
+            This is a simulated live caption for testing purposes. The extension should capture this text and display it in the transcription tab.
+        </div>
+    </div>
+    
+    <div class="caption-container">
+        <h2>Alternative Caption Format</h2>
+        <div class="caption-text" data-placeholder="Transcript">
+            This is another format of live caption that the extension should detect and process.
+        </div>
+    </div>
+    
+    <div class="caption-container">
+        <h2>Control Panel</h2>
+        <button onclick="updateCaption()">Update Caption</button>
+        <button onclick="changeCaption()">Change Caption Text</button>
+        <button onclick="clearCaption()">Clear Caption</button>
+    </div>
+    
+    <div class="caption-container">
+        <h2>Transcription Output</h2>
+        <div id="transcription-output">
+            Transcription items should appear here when the extension captures live captions.
+        </div>
+    </div>
+
+    <script>
+        let captionCounter = 0;
+        const sampleCaptions = [
+            "Hello, how are you doing today?",
+            "Can you tell me about your experience?",
+            "What challenges have you faced in your previous roles?",
+            "How do you handle difficult situations at work?",
+            "What are your strengths and weaknesses?",
+            "Why do you want to work for our company?",
+            "Where do you see yourself in five years?"
+        ];
+        
+        function updateCaption() {
+            const captionElement = document.getElementById('live-caption');
+            captionElement.textContent = "Caption updated at: " + new Date().toLocaleTimeString();
+        }
+        
+        function changeCaption() {
+            const captionElement = document.getElementById('live-caption');
+            const randomCaption = sampleCaptions[Math.floor(Math.random() * sampleCaptions.length)];
+            captionElement.textContent = randomCaption + " (Update #" + (++captionCounter) + ")";
+        }
+        
+        function clearCaption() {
+            const captionElement = document.getElementById('live-caption');
+            captionElement.textContent = "";
+        }
+        
+        // Simulate live caption updates
+        setInterval(() => {
+            if (Math.random() > 0.7) { // 30% chance to update
+                changeCaption();
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

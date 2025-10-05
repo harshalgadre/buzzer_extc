@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Transcription Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .caption-simulator {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .transcription-display {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            min-height: 100px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .debug-console {
+            background-color: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Transcription Test Page</h1>
+    
+    <div class="test-container">
+        <h2>Caption Simulator</h2>
+        <div class="caption-simulator">
+            <p>This simulates live captions that would appear in a meeting:</p>
+            <div id="live-caption" class="iOzk7" style="font-weight: bold; color: #10b981;">
+                Hello, welcome to the interview. Please tell me about yourself.
+            </div>
+        </div>
+        
+        <button onclick="updateCaption()">Update Caption</button>
+        <button onclick="testDirectTranscription()">Test Direct Transcription</button>
+        <button onclick="testLiveCaption()">Test Live Caption Processing</button>
+        <button onclick="checkTranscriptionList()">Check Transcription List</button>
+    </div>
+    
+    <div class="test-container">
+        <h2>Transcription Display</h2>
+        <div class="transcription-display" id="transcription-output">
+            Transcription items should appear here when processed.
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Debug Console</h2>
+        <div class="debug-console" id="debug-console">
+            Debug information will appear here...
+        </div>
+    </div>
+
+    <script>
+        // Sample captions for testing
+        const sampleCaptions = [
+            "Hello, how are you doing today?",
+            "Can you tell me about your experience?",
+            "What challenges have you faced in your previous roles?",
+            "How do you handle difficult situations at work?",
+            "What are your strengths and weaknesses?",
+            "Why do you want to work for our company?",
+            "Where do you see yourself in five years?"
+        ];
+        
+        let captionCounter = 0;
+        
+        function updateCaption() {
+            const captionElement = document.getElementById('live-caption');
+            const randomCaption = sampleCaptions[Math.floor(Math.random() * sampleCaptions.length)];
+            captionElement.textContent = randomCaption + " (Update #" + (++captionCounter) + ")";
+            
+            // Log to debug console
+            logToConsole('Caption updated: ' + captionElement.textContent);
+        }
+        
+        function testDirectTranscription() {
+            if (window.buzzerOverlayInstance) {
+                try {
+                    const testText = "Direct transcription test message #" + (++captionCounter);
+                    window.buzzerOverlayInstance.addTranscriptionItem('Test', testText, 'interviewer');
+                    logToConsole('✅ Direct transcription added: ' + testText);
+                } catch (error) {
+                    logToConsole('❌ Direct transcription failed: ' + error.message);
+                }
+            } else {
+                logToConsole('❌ buzzerOverlayInstance not found');
+            }
+        }
+        
+        function testLiveCaption() {
+            if (window.buzzerOverlayInstance) {
+                try {
+                    const testText = "Live caption test message #" + (++captionCounter);
+                    window.buzzerOverlayInstance.processLiveCaption(testText);
+                    logToConsole('✅ Live caption processed: ' + testText);
+                } catch (error) {
+                    logToConsole('❌ Live caption processing failed: ' + error.message);
+                }
+            } else {
+                logToConsole('❌ buzzerOverlayInstance not found');
+            }
+        }
+        
+        function checkTranscriptionList() {
+            const transcriptionList = document.querySelector('.transcription-list');
+            if (transcriptionList) {
+                logToConsole('✅ Transcription list found with ' + transcriptionList.children.length + ' items');
+            } else {
+                logToConsole('❌ Transcription list not found');
+            }
+        }
+        
+        function logToConsole(message) {
+            const consoleElement = document.getElementById('debug-console');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleElement.innerHTML += '[' + timestamp + '] ' + message + '\n';
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            
+            // Also log to browser console
+            console.log('[TEST PAGE] ' + message);
+        }
+        
+        // Simulate live caption updates
+        setInterval(() => {
+            if (Math.random() > 0.7) { // 30% chance to update
+                updateCaption();
+            }
+        }, 3000);
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            logToConsole('Test page loaded. Waiting for buzzerOverlayInstance...');
+            
+            // Check for overlay instance periodically
+            const checkInterval = setInterval(() => {
+                if (window.buzzerOverlayInstance) {
+                    logToConsole('✅ buzzerOverlayInstance detected');
+                    clearInterval(checkInterval);
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

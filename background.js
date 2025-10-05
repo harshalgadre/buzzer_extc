@@ -232,14 +232,7 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     return true;
   }
   
-  // Simplified system audio capture - focus on live captions instead of audio processing
-  if (message.action === 'captureSystemAudio') {
-    console.log('🎤 System audio capture requested - focusing on live captions instead');
-    
-    // Instead of capturing audio, we'll just notify that we're ready for live captions
-    sendResponse({ success: true, message: 'Ready for live captions' });
-    return true;
-  }
+
   
   if (message.action === 'stopCapture') {
     console.log('🛑 Stopping audio capture...');
@@ -293,6 +286,16 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     
     return true; // Keep message channel open for async response
   }
+  
+  // Simplified system audio capture - focus on live captions instead of audio processing
+  if (message.action === 'captureSystemAudio') {
+    console.log('🎤 System audio capture requested - focusing on live captions instead');
+    
+    // Instead of capturing audio, we'll just notify that we're ready for live captions
+    sendResponse({ success: true, message: 'Ready for live captions' });
+    return true;
+  }
+
 });
 
 // Function to open AI Helper window

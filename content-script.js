@@ -9,17 +9,22 @@
     google: [
       '[data-self-name]', // Google Meet participant
       '[jscontroller="kWHSsc"]', // Meet controls
-      '.google-meet-participant'
+      '.google-meet-participant',
+      '.iOzk7', // Google Meet captions
+      '.VfPpkd-YVzG2b' // Google Meet container
     ],
     zoom: [
       '#wc-container-right', // Zoom controls
       '.participants-list-container',
-      '[aria-label*="mute"]'
+      '[aria-label*="mute"]',
+      '.caption-container', // Zoom captions
+      '.captions-timestamp' // Zoom caption timestamps
     ],
     teams: [
       '[data-tid="calling-screen"]',
       '.calling-screen',
-      '[data-tid="roster-content"]'
+      '[data-tid="roster-content"]',
+      '.subtitles' // Teams subtitles
     ]
   };
 
@@ -184,6 +189,19 @@
   function requestTabAudioCapture() {
     if (audioPermissionRequested) {
       console.log('Audio permission already requested');
+      // Even if already requested, try again in case user granted permission
+      chrome.runtime.sendMessage({
+        action: 'captureSystemAudio'
+      }).then(response => {
+        if (response && response.success) {
+          console.log('✅ Audio capture ready for live captions');
+          showAudioSuccessIndicator();
+        } else {
+          console.error('❌ Audio capture not ready:', response?.error);
+        }
+      }).catch(error => {
+        console.error('❌ Error requesting audio capture:', error);
+      });
       return;
     }
     
@@ -282,5 +300,91 @@
       }
     }, 5000);
   }
+
+  // Enhanced caption detection for Google Meet
+  function enhanceGoogleMeetCaptions() {
+    if (window.location.hostname.includes('meet.google.com')) {
+      console.log('🎯 Enhancing Google Meet caption detection...');
+      
+      // Add custom styles to make captions more detectable
+      const style = document.createElement('style');
+      style.textContent = `
+        .iOzk7 {
+          transition: all 0.1s ease;
+        }
+        .caption-highlight {
+          background-color: rgba(255, 255, 0, 0.1) !important;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Watch for caption changes
+      const captionObserver = new MutationObserver((mutations) => {
+        console.log('🔍 Google Meet caption mutation detected');
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList' || mutation.type === 'characterData') {
+            console.log('📝 Caption content changed, notifying overlay');
+            // Notify the overlay that captions may have updated
+            if (window.buzzerOverlayInstance && typeof window.buzzerOverlayInstance.checkForLiveCaptions === 'function') {
+              // Throttle the calls to prevent spam
+              setTimeout(() => {
+                console.log('📡 Triggering caption check from MutationObserver');
+                window.buzzerOverlayInstance.checkForLiveCaptions();
+              }, 100);
+            } else {
+              console.log('⚠️ Overlay instance not ready for caption check');
+            }
+          }
+        });
+      });
+      
+      // Start observing after a delay to ensure elements are loaded
+      setTimeout(() => {
+        const captionContainer = document.querySelector('.iOzk7') || document.querySelector('[data-placeholder="Transcript"]');
+        if (captionContainer) {
+          console.log('✅ Google Meet caption container found, starting observer');
+          captionObserver.observe(captionContainer, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true
+          });
+        } else {
+          console.log('⚠️ Google Meet caption container not found');
+        }
+      }, 3000);
+    }
+  }
+
+  // Call the enhancement function after page loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', enhanceGoogleMeetCaptions);
+  } else {
+    enhanceGoogleMeetCaptions();
+  }
+
+  // Add a more aggressive caption detection for all platforms
+  function aggressiveCaptionDetection() {
+    console.log('🔍 Aggressive caption detection triggered');
+    
+    // Notify the overlay to check for captions more frequently
+    if (window.buzzerOverlayInstance) {
+      console.log('✅ buzzerOverlayInstance found, calling checkForLiveCaptions');
+      if (typeof window.buzzerOverlayInstance.checkForLiveCaptions === 'function') {
+        window.buzzerOverlayInstance.checkForLiveCaptions();
+      } else {
+        console.error('❌ checkForLiveCaptions method not found on buzzerOverlayInstance');
+      }
+    } else {
+      console.log('⚠️ buzzerOverlayInstance not found yet');
+    }
+  }
+
+  // Check for captions more frequently when in a meeting
+  setInterval(() => {
+    if (meetingDetected) {
+      aggressiveCaptionDetection();
+    }
+  }, 500); // Check every 500ms when in a meeting
 
 })();

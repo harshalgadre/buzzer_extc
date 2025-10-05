@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal Transcription Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .debug-console {
+            background-color: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Minimal Transcription Test</h1>
+    
+    <div class="test-container">
+        <h2>Test Controls</h2>
+        <button onclick="initializeOverlay()">Initialize Overlay</button>
+        <button onclick="testTranscription()">Test Transcription</button>
+        <button onclick="testLiveCaption()">Test Live Caption</button>
+        <button onclick="checkStatus()">Check Status</button>
+    </div>
+    
+    <div class="test-container">
+        <h2>Debug Console</h2>
+        <div class="debug-console" id="debug-console">
+[INFO] Test page loaded.
+        </div>
+    </div>
+
+    <script>
+        // Simple overlay implementation for testing
+        class MinimalOverlay {
+            constructor() {
+                this.transcriptionItems = [];
+                this.activeTab = 'transcription';
+                console.log('Minimal overlay initialized');
+                this.logToConsole('✅ Minimal overlay initialized');
+            }
+            
+            addTranscriptionItem(speaker, text, type) {
+                this.logToConsole(`📝 Adding transcription: ${speaker} - ${text}`);
+                
+                // Create transcription item
+                const item = {
+                    id: Date.now(),
+                    speaker,
+                    text,
+                    type,
+                    timestamp: new Date().toLocaleTimeString()
+                };
+                
+                // Add to array
+                this.transcriptionItems.push(item);
+                this.logToConsole(`✅ Added item, total: ${this.transcriptionItems.length}`);
+                
+                // Try to add to DOM if possible
+                const list = document.querySelector('.transcription-list');
+                if (list) {
+                    const div = document.createElement('div');
+                    div.textContent = `[${item.timestamp}] ${speaker}: ${text}`;
+                    div.style.padding = '5px';
+                    div.style.borderBottom = '1px solid #eee';
+                    list.appendChild(div);
+                    this.logToConsole('✅ Added to DOM');
+                } else {
+                    this.logToConsole('⚠️ Transcription list not found in DOM');
+                }
+            }
+            
+            processLiveCaption(text) {
+                this.logToConsole(`📺 Processing live caption: ${text}`);
+                this.addTranscriptionItem('Interviewer', text, 'interviewer');
+            }
+            
+            logToConsole(message) {
+                const consoleElement = document.getElementById('debug-console');
+                const timestamp = new Date().toLocaleTimeString();
+                consoleElement.innerHTML += `[${timestamp}] ${message}\n`;
+                consoleElement.scrollTop = consoleElement.scrollHeight;
+                console.log(`[MINIMAL TEST] ${message}`);
+            }
+        }
+        
+        let testOverlay = null;
+        
+        function initializeOverlay() {
+            testOverlay = new MinimalOverlay();
+            logToConsole('🔧 Test overlay initialized');
+        }
+        
+        function testTranscription() {
+            if (!testOverlay) {
+                logToConsole('❌ Overlay not initialized');
+                return;
+            }
+            
+            testOverlay.addTranscriptionItem('Test Speaker', 'This is a test transcription message', 'interviewer');
+        }
+        
+        function testLiveCaption() {
+            if (!testOverlay) {
+                logToConsole('❌ Overlay not initialized');
+                return;
+            }
+            
+            testOverlay.processLiveCaption('This is a live caption test message');
+        }
+        
+        function checkStatus() {
+            logToConsole('🔍 Checking status...');
+            logToConsole(`📦 Overlay initialized: ${!!testOverlay}`);
+            if (testOverlay) {
+                logToConsole(`📝 Transcription items: ${testOverlay.transcriptionItems.length}`);
+            }
+        }
+        
+        function logToConsole(message) {
+            const consoleElement = document.getElementById('debug-console');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleElement.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            console.log(`[TEST PAGE] ${message}`);
+        }
+        
+        // Auto-initialize
+        window.addEventListener('load', function() {
+            logToConsole('🚀 Test page loaded');
+        });
+    </script>
+</body>
+</html>

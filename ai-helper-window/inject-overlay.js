@@ -822,6 +822,9 @@
       // Show ready message
       setTimeout(() => {
         console.log('✅ AI Helper v2.1 ready with system STT active!');
+        // Ensure transcription tab is active by default
+        this.setActiveTab('transcription');
+        console.log('📋 Transcription tab activated by default');
       }, 500);
       
       // Listen for audio chunks from background script
@@ -993,6 +996,7 @@
     }
 
     setActiveTab(tab) {
+      console.log('🔄 Setting active tab:', tab);
       this.activeTab = tab;
       
       const tabButtons = this.overlay.querySelectorAll('.tab-btn');
@@ -1004,6 +1008,7 @@
       });
 
       this.updateContent();
+      console.log('✅ Active tab set to:', tab);
     }
 
     closeCallout() {
@@ -1116,8 +1121,46 @@
     }
 
     addTranscriptionItem(speaker, text, type) {
-      const list = this.overlay.querySelector('.transcription-list');
-      if (!list) return;
+      console.log('📝 Adding transcription item:', { speaker, text, type });
+      
+      // Try multiple ways to find the transcription list
+      let list = this.overlay.querySelector('.transcription-list');
+      
+      // If not found in overlay, try to find it in the document
+      if (!list) {
+        list = document.querySelector('.transcription-list');
+      }
+      
+      // If still not found, try to find it by ID (create one if needed)
+      if (!list) {
+        list = document.getElementById('transcription-list-container');
+      }
+      
+      if (!list) {
+        console.error('❌ Transcription list element not found!');
+        console.log('🔍 Attempting to create transcription list container...');
+        
+        // Try to find the panel content area
+        const panelContent = this.overlay.querySelector('.panel-content') || document.querySelector('.panel-content');
+        if (panelContent) {
+          // Check if transcription-list already exists as a child
+          list = panelContent.querySelector('.transcription-list');
+          if (!list) {
+            // Create the transcription list element
+            list = document.createElement('div');
+            list.className = 'transcription-list';
+            list.id = 'transcription-list-container';
+            panelContent.innerHTML = ''; // Clear existing content
+            panelContent.appendChild(list);
+            console.log('✅ Created new transcription list container');
+          }
+        } else {
+          console.error('❌ Panel content area not found!');
+          return;
+        }
+      }
+      
+      console.log('✅ Transcription list element found, adding item...');
 
       // Create chat message with WhatsApp-style bubble and sender label
       const chatMessage = document.createElement('div');
@@ -1136,6 +1179,7 @@
 
       // Append to bottom like WhatsApp (newest messages at bottom)
       list.appendChild(chatMessage);
+      console.log('✅ Transcription item added to DOM');
       
       // Auto-detect questions from transcription and process with AI
       if (type === 'user' || type === 'interviewer') {
@@ -1149,6 +1193,7 @@
       
       // Auto-scroll to show newest message
       list.scrollTop = list.scrollHeight;
+      console.log('✅ Auto-scrolled to bottom');
 
       // Store in transcription items array (add to beginning for newest-first order)
       this.transcriptionItems.unshift({
@@ -1158,6 +1203,8 @@
         type,
         timestamp
       });
+      
+      console.log('✅ Transcription item added successfully, total items:', this.transcriptionItems.length);
     }
 
     showInterimResult(speaker, text, type) {
@@ -1254,10 +1301,15 @@
     }
 
     updateContent() {
+      console.log('🔄 Updating content for tab:', this.activeTab);
       const contentArea = this.overlay.querySelector('.panel-content');
-      if (!contentArea) return;
+      if (!contentArea) {
+        console.error('❌ Panel content area not found!');
+        return;
+      }
 
       if (this.activeTab === 'topics') {
+        console.log('📂 Loading topics tab content');
         contentArea.innerHTML = `
           <div class="topics-list">
             <div class="topic-item">Technical Skills</div>
@@ -1268,28 +1320,40 @@
           </div>
         `;
       } else {
+        console.log('📝 Loading transcription tab content');
         contentArea.innerHTML = `
           <div class="transcription-list">
+            <!-- Transcription items will be added dynamically -->
           </div>
         `;
         
-        // Re-add existing transcription items with WhatsApp styling
+        // Verify the transcription list was created
         const list = this.overlay.querySelector('.transcription-list');
-        this.transcriptionItems.forEach(item => {
-          const chatMessage = document.createElement('div');
-          chatMessage.className = `chat-message ${item.type}`;
-          chatMessage.innerHTML = `
-            <div class="chat-bubble" data-sender="${item.speaker}">
-              <div class="chat-sender">${item.speaker}</div>
-              <div class="chat-text">${item.text}</div>
-              <div class="timestamp">${item.timestamp}</div>
-            </div>
-          `;
-          list.appendChild(chatMessage);
-        });
-        
-        // Auto-scroll to bottom
-        list.scrollTop = list.scrollHeight;
+        if (list) {
+          console.log('✅ Transcription list element created successfully');
+          
+          // Re-add existing transcription items with WhatsApp styling
+          console.log('📝 Re-adding', this.transcriptionItems.length, 'existing items');
+          this.transcriptionItems.forEach((item, index) => {
+            console.log('📝 Re-adding item', index, ':', item);
+            const chatMessage = document.createElement('div');
+            chatMessage.className = `chat-message ${item.type}`;
+            chatMessage.innerHTML = `
+              <div class="chat-bubble" data-sender="${item.speaker}">
+                <div class="chat-sender">${item.speaker}</div>
+                <div class="chat-text">${item.text}</div>
+                <div class="timestamp">${item.timestamp}</div>
+              </div>
+            `;
+            list.appendChild(chatMessage);
+          });
+          
+          // Auto-scroll to bottom
+          list.scrollTop = list.scrollHeight;
+          console.log('✅ Re-added all items and scrolled to bottom');
+        } else {
+          console.error('❌ Transcription list element not found after creation!');
+        }
       }
     }
 
@@ -1762,37 +1826,103 @@
       this.liveCaptionElement.style.display = 'none';
       document.body.appendChild(this.liveCaptionElement);
       
-      // Use debouncing to prevent spam - only check every 3 seconds
+      // Use debouncing to prevent spam - check every 500ms for better responsiveness
       this.captionCheckInterval = setInterval(() => {
         this.checkForLiveCaptions();
-      }, 3000);
+      }, 500);
     }
     
     // Check for live captions on the page
     checkForLiveCaptions() {
+      console.log('🔍 Checking for live captions...');
+      
       // Common selectors for live captions in meeting platforms
+      // More specific selectors to avoid our own elements
       const captionSelectors = [
         '[data-placeholder="Transcript"]', // Google Meet
         '[aria-label="Live captions"]', // Zoom
-        '.live-transcript', // Generic
-        '.caption-text', // Generic
-        '.transcript-text', // Generic
-        '[class*="caption"]', // Class contains "caption"
-        '[class*="transcript"]' // Class contains "transcript"
+        '.iOzk7', // Google Meet captions class
+        '.VfPpkd-YVzG2b', // Google Meet container
+        '[data-self-name]', // Google Meet participant
+        '.google-meet-participant', // Google Meet participant
+        '.captions-timestamp', // Zoom captions
+        '.speaker-label', // Speaker labels
+        '.subtitles:not(#buzzer-ai-overlay .subtitles)', // Teams subtitles but exclude our own
+        '[data-testid="caption-text"]', // Test ID for captions
+        '.live-transcript-content', // More specific live transcript
+        '.caption-text-content', // More specific caption text
+        '.transcript-text-content' // More specific transcript text
       ];
+      
+      let captionsFound = false;
+      let captionCount = 0;
       
       for (const selector of captionSelectors) {
         try {
           const elements = document.querySelectorAll(selector);
-          elements.forEach(element => {
+          if (elements.length > 0) {
+            console.log(`🔍 Found ${elements.length} elements with selector: ${selector}`);
+            captionCount += elements.length;
+          }
+          elements.forEach((element, index) => {
+            // Skip our own overlay elements
+            if (element.closest('#buzzer-ai-overlay')) {
+              console.log(`⏭️ Skipping our own element with selector: ${selector}`);
+              return;
+            }
+            
+            // Skip elements that are part of our own components
+            if (element.id === 'buzzer-live-caption' || 
+                element.classList.contains('transcription-list') ||
+                element.closest('.transcription-list')) {
+              console.log(`⏭️ Skipping our own component element with selector: ${selector}`);
+              return;
+            }
+            
             if (element.textContent && element.textContent.trim() !== '') {
-              this.processLiveCaptionWithDebounce(element.textContent);
+              const captionText = element.innerText || element.textContent;
+              console.log(`📝 Caption ${index + 1} with selector "${selector}":`, captionText);
+              
+              // Skip our own messages and empty messages
+              if (captionText.includes('Transcription list initialized') || 
+                  captionText.includes('System audio transcription initialized') ||
+                  captionText.trim().length < 3) { // Skip very short messages
+                console.log('⏭️ Skipping self-generated or empty message');
+                return;
+              }
+              
+              // Special handling for Google Meet captions
+              if (element.classList && element.classList.contains('iOzk7')) {
+                // Google Meet specific caption handling
+                if (captionText && captionText.trim() !== '') {
+                  console.log('🔍 Google Meet caption found:', captionText);
+                  this.processLiveCaptionWithDebounce(captionText);
+                }
+              } else {
+                // General caption handling for actual meeting captions
+                // Only process if it looks like a real caption (not UI text)
+                if (captionText && captionText.trim() !== '' && 
+                    !captionText.includes('Click') && 
+                    !captionText.includes('Help') &&
+                    !captionText.includes('Transcription') &&
+                    !captionText.includes('System') &&
+                    !captionText.includes('Initialized') &&
+                    !captionText.includes('🎙️') &&
+                    !captionText.includes('✅') &&
+                    !captionText.includes('❌')) {
+                  console.log('🔍 General meeting caption found:', captionText);
+                  this.processLiveCaptionWithDebounce(captionText);
+                }
+              }
             }
           });
         } catch (e) {
-          console.log('Error querying selector:', selector, e);
+          // Silently ignore errors to prevent spam
+          console.log(`⚠️ Error querying selector ${selector}:`, e.message);
         }
       }
+      
+      console.log(`🔍 Caption check completed. Found ${captionCount} elements, captionsFound: ${captionsFound}`);
     }
     
     // Process live caption text with debouncing to prevent spam
@@ -1805,22 +1935,49 @@
       // Set new debounce timer
       this.debounceTimer = setTimeout(() => {
         this.processLiveCaption(text);
-      }, 500); // Wait 500ms before processing
+      }, 100); // Reduced to 100ms for better responsiveness
     }
     
     // Process live caption text and add to transcription
     processLiveCaption(text) {
-      // Only process if text has changed and is not empty
-      if (!text || text.trim() === '' || this.lastCaptionText === text.trim()) {
+      console.log('📺 Processing live caption:', text);
+      
+      // Validate input
+      if (!text || text.trim() === '') {
+        console.log('❌ Empty caption, skipping...');
         return;
       }
       
-      this.lastCaptionText = text.trim();
-      console.log('📺 Live caption detected:', text);
+      const trimmedText = text.trim();
+      
+      // Skip our own test messages and UI text to prevent infinite loop
+      if (trimmedText.includes('Transcription list initialized') || 
+          trimmedText.includes('System audio transcription initialized') ||
+          trimmedText.includes('Click an interviewer') ||
+          trimmedText.includes('Help Me') ||
+          trimmedText.includes('🎙️') ||
+          trimmedText.includes('✅') ||
+          trimmedText.includes('❌') ||
+          trimmedText.includes('Failed to start system audio capture') ||
+          trimmedText.includes('Please ensure tab audio permissions') ||
+          trimmedText.length < 3) { // Skip very short messages
+        console.log('⏭️ Skipping self-generated or UI message to prevent loop');
+        return;
+      }
+      
+      // Skip if this is the same as the last caption (avoid duplicates)
+      if (trimmedText === this.lastCaptionText) {
+        console.log('⏭️ Skipping duplicate caption');
+        return;
+      }
+      
+      // Always update the last caption text
+      this.lastCaptionText = trimmedText;
+      console.log('📺 Live caption detected:', trimmedText);
       
       // Update live caption display
       if (this.liveCaptionElement) {
-        this.liveCaptionElement.textContent = text;
+        this.liveCaptionElement.textContent = trimmedText;
         this.liveCaptionElement.style.display = 'block';
         
         // Hide after 5 seconds of inactivity
@@ -1833,14 +1990,47 @@
       }
       
       // Add to transcription as system audio (interviewer)
-      // But only if it's a substantial caption (not just a few words)
-      if (text.trim().split(' ').length > 3) {
-        this.addTranscriptionItem('Interviewer', text.trim(), 'interviewer');
+      console.log('📝 Calling addTranscriptionItem for caption...');
+      try {
+        this.addTranscriptionItem('Interviewer', trimmedText, 'interviewer');
+        console.log('✅ Finished processing live caption successfully');
+      } catch (error) {
+        console.error('❌ Error processing live caption:', error);
       }
     }
   }
 
   // Initialize the overlay and make it globally accessible
   window.buzzerOverlayInstance = new OverlayExtensionWindow();
+  
+  // Add a test function for debugging
+  window.testTranscription = function() {
+    console.log('🧪 Testing transcription functionality...');
+    if (window.buzzerOverlayInstance) {
+      try {
+        window.buzzerOverlayInstance.addTranscriptionItem('Test', 'This is a test transcription item', 'interviewer');
+        console.log('✅ Test transcription item added successfully');
+      } catch (error) {
+        console.error('❌ Failed to add test transcription item:', error);
+      }
+    } else {
+      console.error('❌ buzzerOverlayInstance not found');
+    }
+  };
+  
+  // Add another test function for live caption simulation
+  window.testLiveCaption = function() {
+    console.log('🧪 Testing live caption functionality...');
+    if (window.buzzerOverlayInstance) {
+      try {
+        window.buzzerOverlayInstance.processLiveCaption('This is a simulated live caption');
+        console.log('✅ Test live caption processed successfully');
+      } catch (error) {
+        console.error('❌ Failed to process test live caption:', error);
+      }
+    } else {
+      console.error('❌ buzzerOverlayInstance not found');
+    }
+  };
 
 })();

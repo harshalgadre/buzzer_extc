@@ -830,8 +830,15 @@
       // Listen for audio chunks from background script
       this.setupAudioDataListener();
       
-      // Set up live caption observer with debouncing
-      this.setupLiveCaptionObserver();
+      // Use the global live caption detector
+      console.log('🔍 Using global live caption detector');
+      // The detector is already running globally, just ensure it's working
+      if (typeof window.checkForLiveCaptions === 'function') {
+        // Trigger an initial check
+        setTimeout(() => {
+          window.checkForLiveCaptions();
+        }, 1000);
+      }
     }
 
     setupEventListeners() {
@@ -1816,131 +1823,53 @@
       element.addEventListener('touchstart', onTouchStart);
     }
     
-    // Set up observer for live captions with debouncing to prevent spam
+    // Set up observer for live captions (now using global detector)
     setupLiveCaptionObserver() {
-      console.log('🔍 Setting up live caption observer with debouncing...');
-      
-      // Create live caption element
-      this.liveCaptionElement = document.createElement('div');
-      this.liveCaptionElement.id = 'buzzer-live-caption';
-      this.liveCaptionElement.style.display = 'none';
-      document.body.appendChild(this.liveCaptionElement);
-      
-      // Use debouncing to prevent spam - check every 500ms for better responsiveness
-      this.captionCheckInterval = setInterval(() => {
-        this.checkForLiveCaptions();
-      }, 500);
+      console.log('🔍 Live caption observer now using global detector');
+      // The global detector handles this now
     }
     
-    // Check for live captions on the page
+    // Check for live captions on the page (now using global detector)
     checkForLiveCaptions() {
-      console.log('🔍 Checking for live captions...');
-      
-      // Common selectors for live captions in meeting platforms
-      // More specific selectors to avoid our own elements
-      const captionSelectors = [
-        '[data-placeholder="Transcript"]', // Google Meet
-        '[aria-label="Live captions"]', // Zoom
-        '.iOzk7', // Google Meet captions class
-        '.VfPpkd-YVzG2b', // Google Meet container
-        '[data-self-name]', // Google Meet participant
-        '.google-meet-participant', // Google Meet participant
-        '.captions-timestamp', // Zoom captions
-        '.speaker-label', // Speaker labels
-        '.subtitles:not(#buzzer-ai-overlay .subtitles)', // Teams subtitles but exclude our own
-        '[data-testid="caption-text"]', // Test ID for captions
-        '.live-transcript-content', // More specific live transcript
-        '.caption-text-content', // More specific caption text
-        '.transcript-text-content' // More specific transcript text
-      ];
-      
-      let captionsFound = false;
-      let captionCount = 0;
-      
-      for (const selector of captionSelectors) {
-        try {
-          const elements = document.querySelectorAll(selector);
-          if (elements.length > 0) {
-            console.log(`🔍 Found ${elements.length} elements with selector: ${selector}`);
-            captionCount += elements.length;
-          }
-          elements.forEach((element, index) => {
-            // Skip our own overlay elements
-            if (element.closest('#buzzer-ai-overlay')) {
-              console.log(`⏭️ Skipping our own element with selector: ${selector}`);
-              return;
-            }
-            
-            // Skip elements that are part of our own components
-            if (element.id === 'buzzer-live-caption' || 
-                element.classList.contains('transcription-list') ||
-                element.closest('.transcription-list')) {
-              console.log(`⏭️ Skipping our own component element with selector: ${selector}`);
-              return;
-            }
-            
-            if (element.textContent && element.textContent.trim() !== '') {
-              const captionText = element.innerText || element.textContent;
-              console.log(`📝 Caption ${index + 1} with selector "${selector}":`, captionText);
-              
-              // Skip our own messages and empty messages
-              if (captionText.includes('Transcription list initialized') || 
-                  captionText.includes('System audio transcription initialized') ||
-                  captionText.trim().length < 3) { // Skip very short messages
-                console.log('⏭️ Skipping self-generated or empty message');
-                return;
-              }
-              
-              // Special handling for Google Meet captions
-              if (element.classList && element.classList.contains('iOzk7')) {
-                // Google Meet specific caption handling
-                if (captionText && captionText.trim() !== '') {
-                  console.log('🔍 Google Meet caption found:', captionText);
-                  this.processLiveCaptionWithDebounce(captionText);
-                }
-              } else {
-                // General caption handling for actual meeting captions
-                // Only process if it looks like a real caption (not UI text)
-                if (captionText && captionText.trim() !== '' && 
-                    !captionText.includes('Click') && 
-                    !captionText.includes('Help') &&
-                    !captionText.includes('Transcription') &&
-                    !captionText.includes('System') &&
-                    !captionText.includes('Initialized') &&
-                    !captionText.includes('🎙️') &&
-                    !captionText.includes('✅') &&
-                    !captionText.includes('❌')) {
-                  console.log('🔍 General meeting caption found:', captionText);
-                  this.processLiveCaptionWithDebounce(captionText);
-                }
-              }
-            }
-          });
-        } catch (e) {
-          // Silently ignore errors to prevent spam
-          console.log(`⚠️ Error querying selector ${selector}:`, e.message);
-        }
+      console.log('🔍 Checking for live captions via global detector...');
+      // Use the global detector
+      if (typeof window.liveCaptionDetector !== 'undefined' && 
+          typeof window.liveCaptionDetector.checkForLiveCaptions === 'function') {
+        window.liveCaptionDetector.checkForLiveCaptions();
+      } else {
+        console.log('⚠️ Global live caption detector not available');
       }
-      
-      console.log(`🔍 Caption check completed. Found ${captionCount} elements, captionsFound: ${captionsFound}`);
     }
     
-    // Process live caption text with debouncing to prevent spam
+    // Process live caption text with debouncing (now using global detector)
     processLiveCaptionWithDebounce(text) {
-      // Clear existing debounce timer
-      if (this.debounceTimer) {
-        clearTimeout(this.debounceTimer);
+      console.log('🔍 Processing live caption via global detector...');
+      // Use the global detector
+      if (typeof window.liveCaptionDetector !== 'undefined' && 
+          typeof window.liveCaptionDetector.processLiveCaptionWithDebounce === 'function') {
+        window.liveCaptionDetector.processLiveCaptionWithDebounce(text);
+      } else {
+        console.log('⚠️ Global live caption detector not available');
       }
-      
-      // Set new debounce timer
-      this.debounceTimer = setTimeout(() => {
-        this.processLiveCaption(text);
-      }, 100); // Reduced to 100ms for better responsiveness
     }
     
-    // Process live caption text and add to transcription
+    // Process live caption text and add to transcription (now using global detector)
     processLiveCaption(text) {
-      console.log('📺 Processing live caption:', text);
+      console.log('📺 Processing live caption via global detector:', text);
+      // Use the global detector
+      if (typeof window.liveCaptionDetector !== 'undefined' && 
+          typeof window.liveCaptionDetector.processLiveCaption === 'function') {
+        window.liveCaptionDetector.processLiveCaption(text);
+      } else {
+        console.log('⚠️ Global live caption detector not available');
+        // Fallback to our own implementation
+        this.fallbackProcessLiveCaption(text);
+      }
+    }
+    
+    // Fallback implementation for live caption processing
+    fallbackProcessLiveCaption(text) {
+      console.log('📺 Fallback: Processing live caption:', text);
       
       // Validate input
       if (!text || text.trim() === '') {
@@ -1975,20 +1904,6 @@
       this.lastCaptionText = trimmedText;
       console.log('📺 Live caption detected:', trimmedText);
       
-      // Update live caption display
-      if (this.liveCaptionElement) {
-        this.liveCaptionElement.textContent = trimmedText;
-        this.liveCaptionElement.style.display = 'block';
-        
-        // Hide after 5 seconds of inactivity
-        if (this.captionTimeout) {
-          clearTimeout(this.captionTimeout);
-        }
-        this.captionTimeout = setTimeout(() => {
-          this.liveCaptionElement.style.display = 'none';
-        }, 5000);
-      }
-      
       // Add to transcription as system audio (interviewer)
       console.log('📝 Calling addTranscriptionItem for caption...');
       try {
@@ -2002,6 +1917,28 @@
 
   // Initialize the overlay and make it globally accessible
   window.buzzerOverlayInstance = new OverlayExtensionWindow();
+  
+  // Register with the bridge if available
+  if (window.buzzerOverlayBridge && typeof window.buzzerOverlayBridge.registerReactCallbacks === 'function') {
+    console.log('🔗 Registering overlay instance with bridge');
+    window.buzzerOverlayBridge.registerReactCallbacks({
+      addTranscriptionItem: (speaker, text, type) => {
+        if (window.buzzerOverlayInstance && typeof window.buzzerOverlayInstance.addTranscriptionItem === 'function') {
+          window.buzzerOverlayInstance.addTranscriptionItem(speaker, text, type);
+        }
+      },
+      processLiveCaption: (text) => {
+        if (window.buzzerOverlayInstance && typeof window.buzzerOverlayInstance.processLiveCaption === 'function') {
+          window.buzzerOverlayInstance.processLiveCaption(text);
+        }
+      },
+      checkForLiveCaptions: () => {
+        if (window.buzzerOverlayInstance && typeof window.buzzerOverlayInstance.checkForLiveCaptions === 'function') {
+          window.buzzerOverlayInstance.checkForLiveCaptions();
+        }
+      }
+    });
+  }
   
   // Add a test function for debugging
   window.testTranscription = function() {

@@ -367,16 +367,12 @@
   function aggressiveCaptionDetection() {
     console.log('🔍 Aggressive caption detection triggered');
     
-    // Notify the overlay to check for captions more frequently
-    if (window.buzzerOverlayInstance) {
-      console.log('✅ buzzerOverlayInstance found, calling checkForLiveCaptions');
-      if (typeof window.buzzerOverlayInstance.checkForLiveCaptions === 'function') {
-        window.buzzerOverlayInstance.checkForLiveCaptions();
-      } else {
-        console.error('❌ checkForLiveCaptions method not found on buzzerOverlayInstance');
-      }
+    // Use the bridge to check for captions
+    if (typeof window.checkForLiveCaptions === 'function') {
+      console.log('✅ Bridge function found, calling checkForLiveCaptions');
+      window.checkForLiveCaptions();
     } else {
-      console.log('⚠️ buzzerOverlayInstance not found yet');
+      console.log('⚠️ Bridge function not found');
     }
   }
 
@@ -387,4 +383,26 @@
     }
   }, 500); // Check every 500ms when in a meeting
 
+})();
+
+// Add the bridge script to the page
+(function() {
+  // Create a script element for the bridge
+  const bridgeScript = document.createElement('script');
+  bridgeScript.src = chrome.runtime.getURL('ai-helper-window/overlay-bridge.js');
+  bridgeScript.onload = function() {
+    console.log('✅ Overlay bridge script loaded');
+  };
+  document.head.appendChild(bridgeScript);
+})();
+
+// Add the live caption detector script to the page
+(function() {
+  // Create a script element for the live caption detector
+  const detectorScript = document.createElement('script');
+  detectorScript.src = chrome.runtime.getURL('ai-helper-window/live-caption-detector.js');
+  detectorScript.onload = function() {
+    console.log('✅ Live caption detector script loaded');
+  };
+  document.head.appendChild(detectorScript);
 })();

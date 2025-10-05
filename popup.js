@@ -1,4 +1,4 @@
- // Application state
+// Application state
 let currentScreen = 'login';
 let userData = null;
 let authToken = null;
@@ -487,6 +487,21 @@ async function startAIHelper(sessionId, meetingUrl) {
       meetingUrl: meetingUrl,
       screenStream: true
     });
+
+    // Request tab audio permission after a short delay
+    setTimeout(() => {
+      chrome.runtime.sendMessage({
+        action: 'requestTabAudio'
+      }).then(response => {
+        if (response && response.success) {
+          console.log('✅ Audio permission requested successfully');
+        } else {
+          console.error('❌ Failed to request audio permission:', response?.error);
+        }
+      }).catch(error => {
+        console.error('❌ Error requesting audio permission:', error);
+      });
+    }, 2000);
 
     console.log('AI Helper request sent to background script with screen sharing');
     

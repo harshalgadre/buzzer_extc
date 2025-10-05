@@ -683,6 +683,53 @@
     #buzzer-ai-overlay .qa-question .qa-text {
       border-left-color: #3b82f6 !important;
     }
+    
+    /* Audio activity indicator */
+    #buzzer-ai-overlay .audio-indicator {
+      position: fixed !important;
+      top: 20px !important;
+      right: 20px !important;
+      background: #10b981 !important;
+      color: white !important;
+      padding: 12px 16px !important;
+      border-radius: 8px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+      z-index: 1000000 !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+      font-size: 14px !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+    }
+    
+    #buzzer-ai-overlay .audio-indicator.recording::before {
+      content: "●" !important;
+      color: #ef4444 !important;
+      animation: blink 1s infinite !important;
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    /* Live caption styles */
+    #buzzer-live-caption {
+      position: fixed !important;
+      bottom: 20px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      background: rgba(0, 0, 0, 0.8) !important;
+      color: white !important;
+      padding: 12px 20px !important;
+      border-radius: 24px !important;
+      font-size: 16px !important;
+      z-index: 1000000 !important;
+      max-width: 80% !important;
+      text-align: center !important;
+      backdrop-filter: blur(4px) !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
   `;
 
   // Append to head to ensure proper CSS loading
@@ -707,6 +754,12 @@
       this.userRecognition = null;
       this.currentQuestion = null;
       this.currentAnswer = null;
+      this.audioActivityTimeout = null;
+      this.liveCaptionElement = null;
+      this.lastCaptionText = '';
+      this.captionCheckInterval = null;
+      this.captionTimeout = null;
+      this.debounceTimer = null;
       
       // Question detection regex patterns
       this.questionPatterns = [
@@ -770,6 +823,12 @@
       setTimeout(() => {
         console.log('✅ AI Helper v2.1 ready with system STT active!');
       }, 500);
+      
+      // Listen for audio chunks from background script
+      this.setupAudioDataListener();
+      
+      // Set up live caption observer with debouncing
+      this.setupLiveCaptionObserver();
     }
 
     setupEventListeners() {
@@ -878,6 +937,19 @@
     closeOverlay() {
       this.overlay.style.opacity = '0';
       this.overlay.style.transform = 'scale(0.9)';
+      
+      // Clear any intervals to prevent memory leaks
+      if (this.captionCheckInterval) {
+        clearInterval(this.captionCheckInterval);
+        this.captionCheckInterval = null;
+      }
+      
+      // Clear debounce timer
+      if (this.debounceTimer) {
+        clearTimeout(this.debounceTimer);
+        this.debounceTimer = null;
+      }
+      
       setTimeout(() => {
         if (this.overlay && this.overlay.parentNode) {
           this.overlay.parentNode.removeChild(this.overlay);
@@ -1058,6 +1130,7 @@
         <div class="chat-bubble">
           <div class="chat-sender">${speaker}</div>
           <div class="chat-text">${text}</div>
+          <div class="timestamp">${timestamp}</div>
         </div>
       `;
 
@@ -1206,12 +1279,17 @@
           const chatMessage = document.createElement('div');
           chatMessage.className = `chat-message ${item.type}`;
           chatMessage.innerHTML = `
-            <div class="chat-bubble" data-sender="${item.sender}">
+            <div class="chat-bubble" data-sender="${item.speaker}">
+              <div class="chat-sender">${item.speaker}</div>
               <div class="chat-text">${item.text}</div>
+              <div class="timestamp">${item.timestamp}</div>
             </div>
           `;
           list.appendChild(chatMessage);
         });
+        
+        // Auto-scroll to bottom
+        list.scrollTop = list.scrollHeight;
       }
     }
 
@@ -1351,16 +1429,9 @@
       }
       
       // For demo purposes, show that system audio capture is working
-      this.addTranscriptionItem('System', '✅ System audio capture active - audio chunks will be processed', 'ai');
+      this.addTranscriptionItem('System', '✅ System audio capture active - focusing on live captions', 'ai');
       
-      // Note: Browser Speech Recognition API doesn't work with programmatically captured audio
-      // For production, you would need to:
-      // 1. Send audio chunks to a speech-to-text service (Google Speech API, Azure Speech, etc.)
-      // 2. Or use a WebAssembly-based speech recognition library
-      // 3. Or implement server-side speech processing
-      
-      console.log('✅ System audio transcription processor ready');
-      console.log('� Note: Currently capturing system audio chunks. For full transcription, integrate with a speech service.');
+      console.log('✅ System audio transcription processor ready - focusing on live captions');
     }
     
     setupAudioDataListener() {
@@ -1368,67 +1439,45 @@
       chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.action === 'audioChunk') {
           console.log('📡 Received audio chunk from background script, size:', message.data?.size);
-          this.processAudioChunk(message.data);
-          
-          // Show visual feedback that system audio is being captured
-          this.showSystemAudioActivity(message.data?.size || 0);
+          // We're not processing audio chunks anymore, focusing on live captions
         } else if (message.action === 'audioData') {
           console.log('📡 Received final audio data from background script');
-          if (message.data && message.final) {
-            this.processFinalAudio(message.data);
-          }
+          // We're not processing audio data anymore, focusing on live captions
         }
       });
     }
     
     showSystemAudioActivity(audioSize) {
-      // Visual indicator that system audio is being captured
-      if (audioSize > 1000) { // If there's substantial audio data
-        const timestamp = new Date().toLocaleTimeString();
-        this.addTranscriptionItem('System', `🎧 System audio detected (${audioSize} bytes) at ${timestamp}`, 'ai');
+      // Clear any existing timeout
+      if (this.audioActivityTimeout) {
+        clearTimeout(this.audioActivityTimeout);
       }
+      
+      // Show audio activity indicator
+      let indicator = document.getElementById('buzzer-audio-activity');
+      if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'buzzer-audio-activity';
+        indicator.className = 'audio-indicator recording';
+        indicator.innerHTML = '🎤 Interviewer audio detected';
+        document.body.appendChild(indicator);
+      }
+      
+      // Hide indicator after 2 seconds of inactivity
+      this.audioActivityTimeout = setTimeout(() => {
+        if (indicator.parentNode) {
+          indicator.parentNode.removeChild(indicator);
+        }
+      }, 2000);
     }
     
-    async processAudioChunk(audioBlob) {
-      try {
-        console.log('🎧 Processing audio chunk for transcription...');
-        
-        // For now, we'll simulate transcription since browser Speech Recognition
-        // doesn't work well with programmatically captured audio
-        // In a real implementation, you would send this to a speech-to-text service
-        
-        // Simulate detection of audio activity
-        if (audioBlob.size > 1000) { // If there's substantial audio data
-          // Create a mock transcription result
-          const mockTranscriptions = [
-            'Audio detected from system',
-            'Processing system audio...',
-            'System audio being transcribed',
-            'Capturing interviewer audio'
-          ];
-          
-          const randomTranscription = mockTranscriptions[Math.floor(Math.random() * mockTranscriptions.length)];
-          
-          // Show that we're receiving system audio
-          setTimeout(() => {
-            console.log('📡 System audio chunk processed, size:', audioBlob.size);
-            // You could add this line to show audio is being captured:
-            // this.addTranscriptionItem('System', `🎧 Audio chunk received (${audioBlob.size} bytes)`, 'ai');
-          }, 100);
-        }
-        
-      } catch (error) {
-        console.error('❌ Error processing audio chunk:', error);
-      }
+    async processAudioChunk(audioBlob, size) {
+      // Not processing audio chunks anymore, focusing on live captions
     }
     
     async processFinalAudio(audioBlob) {
-      console.log('🎧 Processing final audio data...');
-      // Similar processing for final audio if needed
-      this.processAudioChunk(audioBlob);
+      // Not processing final audio anymore, focusing on live captions
     }
-    
-
 
     initUserSTT() {
       console.log('🎤 Starting User STT...');
@@ -1508,7 +1557,7 @@
         if (this.isScreenSharing && this.isUserMicOn) {
           input.placeholder = '🎤 Both audio sources active - Type additional prompts...';
         } else if (this.isScreenSharing) {
-          input.placeholder = '🔊 System audio transcribing - Click mic for voice input...';
+          input.placeholder = '🔊 Live captions active - Click mic for voice input...';
         } else if (this.isUserMicOn) {
           input.placeholder = '🎤 Mic active - Type additional prompts...';
         } else {
@@ -1536,7 +1585,7 @@
         );
         
         if (isNearEdge) {
-          console.log('� Starting resize...');
+          console.log('📐 Starting resize...');
           isResizing = true;
           element.classList.add('resizing');
         } else {
@@ -1701,6 +1750,93 @@
       };
       
       element.addEventListener('touchstart', onTouchStart);
+    }
+    
+    // Set up observer for live captions with debouncing to prevent spam
+    setupLiveCaptionObserver() {
+      console.log('🔍 Setting up live caption observer with debouncing...');
+      
+      // Create live caption element
+      this.liveCaptionElement = document.createElement('div');
+      this.liveCaptionElement.id = 'buzzer-live-caption';
+      this.liveCaptionElement.style.display = 'none';
+      document.body.appendChild(this.liveCaptionElement);
+      
+      // Use debouncing to prevent spam - only check every 3 seconds
+      this.captionCheckInterval = setInterval(() => {
+        this.checkForLiveCaptions();
+      }, 3000);
+    }
+    
+    // Check for live captions on the page
+    checkForLiveCaptions() {
+      // Common selectors for live captions in meeting platforms
+      const captionSelectors = [
+        '[data-placeholder="Transcript"]', // Google Meet
+        '[aria-label="Live captions"]', // Zoom
+        '.live-transcript', // Generic
+        '.caption-text', // Generic
+        '.transcript-text', // Generic
+        '[class*="caption"]', // Class contains "caption"
+        '[class*="transcript"]' // Class contains "transcript"
+      ];
+      
+      for (const selector of captionSelectors) {
+        try {
+          const elements = document.querySelectorAll(selector);
+          elements.forEach(element => {
+            if (element.textContent && element.textContent.trim() !== '') {
+              this.processLiveCaptionWithDebounce(element.textContent);
+            }
+          });
+        } catch (e) {
+          console.log('Error querying selector:', selector, e);
+        }
+      }
+    }
+    
+    // Process live caption text with debouncing to prevent spam
+    processLiveCaptionWithDebounce(text) {
+      // Clear existing debounce timer
+      if (this.debounceTimer) {
+        clearTimeout(this.debounceTimer);
+      }
+      
+      // Set new debounce timer
+      this.debounceTimer = setTimeout(() => {
+        this.processLiveCaption(text);
+      }, 500); // Wait 500ms before processing
+    }
+    
+    // Process live caption text and add to transcription
+    processLiveCaption(text) {
+      // Only process if text has changed and is not empty
+      if (!text || text.trim() === '' || this.lastCaptionText === text.trim()) {
+        return;
+      }
+      
+      this.lastCaptionText = text.trim();
+      console.log('📺 Live caption detected:', text);
+      
+      // Update live caption display
+      if (this.liveCaptionElement) {
+        this.liveCaptionElement.textContent = text;
+        this.liveCaptionElement.style.display = 'block';
+        
+        // Hide after 5 seconds of inactivity
+        if (this.captionTimeout) {
+          clearTimeout(this.captionTimeout);
+        }
+        this.captionTimeout = setTimeout(() => {
+          this.liveCaptionElement.style.display = 'none';
+        }, 5000);
+      }
+      
+      // Add to transcription as system audio (interviewer)
+      // But only if it's a substantial caption (not just a few words)
+      if (text.trim().split(' ').length > 3) {
+        this.addTranscriptionItem('Interviewer', text.trim(), 'interviewer');
+      }
     }
   }
 

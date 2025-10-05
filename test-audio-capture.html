@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Capture Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .transcription {
+            background-color: #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Audio Capture Test</h1>
+        
+        <div class="test-section">
+            <h2>System Audio Capture Test</h2>
+            <p>This test will verify that the extension can capture system audio from tabs.</p>
+            
+            <button id="startCapture">Start Audio Capture</button>
+            <button id="stopCapture" disabled>Stop Audio Capture</button>
+            
+            <div id="status" class="status info">
+                Click "Start Audio Capture" to begin testing
+            </div>
+            
+            <h3>Transcription Output:</h3>
+            <div id="transcription" class="transcription">
+                Transcription will appear here...
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Instructions</h2>
+            <ol>
+                <li>Load this extension in Chrome</li>
+                <li>Open this test page in a new tab</li>
+                <li>Click "Start Audio Capture"</li>
+                <li>Play audio in another tab (e.g., YouTube, music player)</li>
+                <li>Observe the transcription output</li>
+                <li>Click "Stop Audio Capture" when finished</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startBtn = document.getElementById('startCapture');
+            const stopBtn = document.getElementById('stopCapture');
+            const statusDiv = document.getElementById('status');
+            const transcriptionDiv = document.getElementById('transcription');
+            
+            let isCapturing = false;
+            
+            startBtn.addEventListener('click', async function() {
+                try {
+                    updateStatus('Requesting audio capture...', 'info');
+                    
+                    // Send message to background script to start audio capture
+                    chrome.runtime.sendMessage({
+                        action: 'captureSystemAudio'
+                    }, function(response) {
+                        if (response && response.success) {
+                            isCapturing = true;
+                            startBtn.disabled = true;
+                            stopBtn.disabled = false;
+                            updateStatus('Audio capture started successfully!', 'success');
+                            
+                            // Add initial transcription
+                            addTranscription('System audio capture initialized. Play audio in another tab to test.');
+                        } else {
+                            updateStatus('Failed to start audio capture: ' + (response?.error || 'Unknown error'), 'error');
+                        }
+                    });
+                } catch (error) {
+                    updateStatus('Error starting audio capture: ' + error.message, 'error');
+                }
+            });
+            
+            stopBtn.addEventListener('click', function() {
+                if (!isCapturing) return;
+                
+                try {
+                    updateStatus('Stopping audio capture...', 'info');
+                    
+                    // Send message to background script to stop audio capture
+                    chrome.runtime.sendMessage({
+                        action: 'stopCapture'
+                    }, function(response) {
+                        isCapturing = false;
+                        startBtn.disabled = false;
+                        stopBtn.disabled = true;
+                        updateStatus('Audio capture stopped.', 'info');
+                    });
+                } catch (error) {
+                    updateStatus('Error stopping audio capture: ' + error.message, 'error');
+                }
+            });
+            
+            function updateStatus(message, type) {
+                statusDiv.textContent = message;
+                statusDiv.className = 'status ' + type;
+            }
+            
+            function addTranscription(text) {
+                const timestamp = new Date().toLocaleTimeString();
+                transcriptionDiv.innerHTML += `<div>[${timestamp}] ${text}</div>`;
+                transcriptionDiv.scrollTop = transcriptionDiv.scrollHeight;
+            }
+            
+            // Listen for audio chunks from background script
+            chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
+                if (message.action === 'audioChunk') {
+                    console.log('Received audio chunk, size:', message.size);
+                    addTranscription(`Audio chunk received (${message.size} bytes)`);
+                } else if (message.action === 'audioData') {
+                    console.log('Received final audio data');
+                    addTranscription('Final audio data processed');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 (function() {
   let meetingDetected = false;
   let observer = null;
+  let audioPermissionRequested = false;
 
   // Meeting detection patterns
   const meetingIndicators = {
@@ -113,7 +114,173 @@
       });
       sendResponse({ success: true });
     }
+    
+    // Handle audio permission request from background script
+    if (request.action === 'requestAudioPermission') {
+      console.log('🔔 Audio permission requested by extension');
+      
+      // Show a visual indicator to the user that audio permission is needed
+      showAudioPermissionIndicator();
+      
+      // Request tab audio capture
+      requestTabAudioCapture();
+      
+      sendResponse({ success: true });
+    }
+    
+    // Handle system audio chunk from background script
+    if (request.action === 'systemAudioChunk') {
+      console.log('📡 Received system audio chunk from background');
+      // Forward to AI helper overlay if it exists
+      if (window.buzzerOverlayInstance) {
+        // This would be where you'd send the audio to a speech recognition service
+        console.log('🔊 System audio chunk forwarded to AI helper');
+      }
+    }
+    
     return true; // Will respond asynchronously
   });
+
+  // Show visual indicator for audio permission request
+  function showAudioPermissionIndicator() {
+    // Create a notification element
+    const notification = document.createElement('div');
+    notification.id = 'buzzer-audio-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      max-width: 300px;
+    `;
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 20px;">🎤</div>
+        <div>
+          <div style="font-weight: 600; margin-bottom: 4px;">Audio Permission Needed</div>
+          <div>Please allow tab audio access for transcription</div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 5000);
+  }
+
+  // Request tab audio capture
+  function requestTabAudioCapture() {
+    if (audioPermissionRequested) {
+      console.log('Audio permission already requested');
+      return;
+    }
+    
+    audioPermissionRequested = true;
+    
+    // Send message to background script to initiate audio capture
+    chrome.runtime.sendMessage({
+      action: 'captureSystemAudio'
+    }).then(response => {
+      if (response && response.success) {
+        console.log('✅ Audio capture started successfully');
+        // Show success indicator
+        showAudioSuccessIndicator();
+      } else {
+        console.error('❌ Failed to start audio capture:', response?.error);
+        showAudioErrorIndicator(response?.error || 'Failed to start audio capture');
+      }
+    }).catch(error => {
+      console.error('❌ Error requesting audio capture:', error);
+      showAudioErrorIndicator('Error requesting audio permission');
+    });
+  }
+
+  // Show success indicator
+  function showAudioSuccessIndicator() {
+    const notification = document.createElement('div');
+    notification.id = 'buzzer-audio-success';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      max-width: 300px;
+    `;
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 20px;">✅</div>
+        <div>
+          <div style="font-weight: 600; margin-bottom: 4px;">Audio Access Granted</div>
+          <div>System audio will be transcribed</div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 3000);
+  }
+
+  // Show error indicator
+  function showAudioErrorIndicator(error) {
+    const notification = document.createElement('div');
+    notification.id = 'buzzer-audio-error';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ef4444;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      max-width: 300px;
+    `;
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 20px;">❌</div>
+        <div>
+          <div style="font-weight: 600; margin-bottom: 4px;">Audio Access Denied</div>
+          <div style="font-size: 12px;">${error}</div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 5000);
+  }
 
 })();

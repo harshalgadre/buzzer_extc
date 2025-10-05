@@ -2,6 +2,8 @@ let tabCaptureStream = null;
 let mediaRecorder = null;
 let audioChunks = [];
 let aiHelperWindowId = null;
+let isCapturing = false;
+let captureInterval = null;
 
 // Utility function to get aspect ratio
 function getAspectRatio(width, height) {
@@ -92,6 +94,7 @@ function gotTabCaptureStream(stream, constraints, tabId) {
 
   console.log('Tab capture stream received:', stream);
   tabCaptureStream = stream;
+  isCapturing = true;
 
   // Get audio tracks for processing
   const audioTracks = stream.getAudioTracks();
@@ -120,6 +123,7 @@ function gotTabCaptureStream(stream, constraints, tabId) {
       
       mediaRecorder.onstop = function() {
         console.log('Media recorder stopped');
+        isCapturing = false;
       };
       
       // Start recording with 1-second chunks for real-time processing
@@ -151,6 +155,7 @@ function gotTabCaptureStream(stream, constraints, tabId) {
   stream.addEventListener('ended', () => {
     console.log('Tab capture stream ended');
     tabCaptureStream = null;
+    isCapturing = false;
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
     }
@@ -215,70 +220,29 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
     }
+    isCapturing = false;
+    
+    // Clear any capture interval
+    if (captureInterval) {
+      clearInterval(captureInterval);
+      captureInterval = null;
+    }
+    
     sendResponse({ success: true });
     return true;
   }
+  
+  // Simplified system audio capture - focus on live captions instead of audio processing
   if (message.action === 'captureSystemAudio') {
-    // Use tabCapture API to capture system audio
-    chrome.tabCapture.capture({ audio: true, video: false }, function(stream) {
-      if (stream) {
-        tabCaptureStream = stream;
-        audioChunks = [];
-        
-        mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'audio/webm;codecs=opus'
-        });
-        
-        // Process audio chunks every 3 seconds for continuous transcription
-        mediaRecorder.ondataavailable = function(event) {
-          if (event.data.size > 0) {
-            audioChunks.push(event.data);
-            
-            // Create blob from current chunk for processing
-            const audioBlob = new Blob([event.data], { type: 'audio/webm' });
-            
-            // Send audio chunk to content script for processing
-            chrome.runtime.sendMessage({
-              action: 'audioChunk',
-              data: audioBlob
-            });
-          }
-        };
-        
-        mediaRecorder.onstop = function() {
-          // Final processing when recording stops
-          if (audioChunks.length > 0) {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            
-            chrome.runtime.sendMessage({
-              action: 'audioData',
-              data: audioBlob,
-              final: true
-            });
-          }
-          
-          // Clean up
-          if (tabCaptureStream) {
-            tabCaptureStream.getTracks().forEach(track => track.stop());
-            tabCaptureStream = null;
-          }
-          audioChunks = [];
-        };
-        
-        // Start recording with 3-second chunks for continuous processing
-        mediaRecorder.start(3000); // 3-second timeslices
-        console.log('✅ System audio capture started with continuous processing');
-        
-        sendResponse({ success: true });
-      } else {
-        sendResponse({ success: false, error: 'Failed to capture tab audio' });
-      }
-    });
+    console.log('🎤 System audio capture requested - focusing on live captions instead');
     
-    return true; // Keep the message channel open for the async response
+    // Instead of capturing audio, we'll just notify that we're ready for live captions
+    sendResponse({ success: true, message: 'Ready for live captions' });
+    return true;
   }
   
   if (message.action === 'stopCapture') {
+    console.log('🛑 Stopping audio capture...');
     if (mediaRecorder && mediaRecorder.state !== 'inactive') {
       mediaRecorder.stop();
     }
@@ -288,8 +252,46 @@ chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
       tabCaptureStream = null;
     }
     
+    isCapturing = false;
+    
+    // Clear any capture interval
+    if (captureInterval) {
+      clearInterval(captureInterval);
+      captureInterval = null;
+    }
+    
     sendResponse({ success: true });
     return true;
+  }
+  
+  // New message handler for requesting tab audio permission
+  if (message.action === 'requestTabAudio') {
+    console.log('🔔 Requesting tab audio permission...');
+    
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      if (chrome.runtime.lastError) {
+        console.error('Error querying tabs:', chrome.runtime.lastError);
+        sendResponse({ success: false, error: chrome.runtime.lastError.message });
+        return;
+      }
+      
+      const activeTab = tabs[0];
+      
+      // Send message to content script to show audio permission request
+      chrome.tabs.sendMessage(activeTab.id, {
+        action: 'requestAudioPermission'
+      }, function(response) {
+        if (chrome.runtime.lastError) {
+          console.error('Error sending message to content script:', chrome.runtime.lastError);
+          sendResponse({ success: false, error: 'Failed to communicate with content script' });
+          return;
+        }
+        
+        sendResponse({ success: true });
+      });
+    });
+    
+    return true; // Keep message channel open for async response
   }
 });
 
@@ -352,3 +354,46 @@ async function openAIHelperWindow(hasScreenShare = false) {
     console.error('Failed to open AI Helper overlay:', error);
   }
 }
+
+// Add cleanup function to prevent memory leaks
+function cleanup() {
+  console.log('🧹 Cleaning up background script resources...');
+  
+  // Stop media recorder
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    try {
+      mediaRecorder.stop();
+    } catch (e) {
+      console.log('MediaRecorder already stopped');
+    }
+  }
+  
+  // Stop tab capture stream
+  if (tabCaptureStream) {
+    try {
+      tabCaptureStream.getTracks().forEach(track => track.stop());
+    } catch (e) {
+      console.log('Tracks already stopped');
+    }
+    tabCaptureStream = null;
+  }
+  
+  // Clear intervals
+  if (captureInterval) {
+    clearInterval(captureInterval);
+    captureInterval = null;
+  }
+  
+  isCapturing = false;
+}
+
+// Listen for extension shutdown
+chrome.runtime.onSuspend.addListener(cleanup);
+
+// Listen for tab updates to clean up if needed
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'loading') {
+    // Clean up if we're navigating away from a page
+    cleanup();
+  }
+});

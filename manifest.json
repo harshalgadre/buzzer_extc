@@ -14,6 +14,7 @@
     "identity",
     "activeTab",
     "tabCapture",
+    "desktopCapture",
     "microphone",
     "storage",
     "https://*.googleapis.com/*",
@@ -24,6 +25,20 @@
       "matches": ["https://meet.google.com/*", "https://zoom.us/*", "https://*.zoom.us/*", "https://teams.microsoft.com/*"],
       "js": ["content-script.js"],
       "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "ai-helper-window/overlay-bridge.js",
+        "ai-helper-window/useLiveCaption.js",
+        "ai-helper-window/test-bridge.js",
+        "ai-helper-window/bridge-test.js",
+        "debug-captions.js",
+        "ai-helper-window/live-caption-detector.js",
+        "verify-bridge.js"
+      ],
+      "matches": ["https://meet.google.com/*", "https://zoom.us/*", "https://*.zoom.us/*", "https://teams.microsoft.com/*"]
     }
   ],
   "host_permissions": [

@@ -2,23 +2,29 @@
 (function() {
   let meetingDetected = false;
   let observer = null;
+  let audioPermissionRequested = false;
 
   // Meeting detection patterns
   const meetingIndicators = {
     google: [
       '[data-self-name]', // Google Meet participant
       '[jscontroller="kWHSsc"]', // Meet controls
-      '.google-meet-participant'
+      '.google-meet-participant',
+      '.iOzk7', // Google Meet captions
+      '.VfPpkd-YVzG2b' // Google Meet container
     ],
     zoom: [
       '#wc-container-right', // Zoom controls
       '.participants-list-container',
-      '[aria-label*="mute"]'
+      '[aria-label*="mute"]',
+      '.caption-container', // Zoom captions
+      '.captions-timestamp' // Zoom caption timestamps
     ],
     teams: [
       '[data-tid="calling-screen"]',
       '.calling-screen',
-      '[data-tid="roster-content"]'
+      '[data-tid="roster-content"]',
+      '.subtitles' // Teams subtitles
     ]
   };
 
@@ -113,7 +119,290 @@
       });
       sendResponse({ success: true });
     }
+    
+    // Handle audio permission request from background script
+    if (request.action === 'requestAudioPermission') {
+      console.log('🔔 Audio permission requested by extension');
+      
+      // Show a visual indicator to the user that audio permission is needed
+      showAudioPermissionIndicator();
+      
+      // Request tab audio capture
+      requestTabAudioCapture();
+      
+      sendResponse({ success: true });
+    }
+    
+    // Handle system audio chunk from background script
+    if (request.action === 'systemAudioChunk') {
+      console.log('📡 Received system audio chunk from background');
+      // Forward to AI helper overlay if it exists
+      if (window.buzzerOverlayInstance) {
+        // This would be where you'd send the audio to a speech recognition service
+        console.log('🔊 System audio chunk forwarded to AI helper');
+      }
+    }
+    
     return true; // Will respond asynchronously
   });
 
+  // Show visual indicator for audio permission request
+  function showAudioPermissionIndicator() {
+    // Create a notification element
+    const notification = document.createElement('div');
+    notification.id = 'buzzer-audio-notification';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      max-width: 300px;
+    `;
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 20px;">🎤</div>
+        <div>
+          <div style="font-weight: 600; margin-bottom: 4px;">Audio Permission Needed</div>
+          <div>Please allow tab audio access for transcription</div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 5000);
+  }
+
+  // Request tab audio capture
+  function requestTabAudioCapture() {
+    if (audioPermissionRequested) {
+      console.log('Audio permission already requested');
+      // Even if already requested, try again in case user granted permission
+      chrome.runtime.sendMessage({
+        action: 'captureSystemAudio'
+      }).then(response => {
+        if (response && response.success) {
+          console.log('✅ Audio capture ready for live captions');
+          showAudioSuccessIndicator();
+        } else {
+          console.error('❌ Audio capture not ready:', response?.error);
+        }
+      }).catch(error => {
+        console.error('❌ Error requesting audio capture:', error);
+      });
+      return;
+    }
+    
+    audioPermissionRequested = true;
+    
+    // Send message to background script to initiate audio capture
+    chrome.runtime.sendMessage({
+      action: 'captureSystemAudio'
+    }).then(response => {
+      if (response && response.success) {
+        console.log('✅ Audio capture started successfully');
+        // Show success indicator
+        showAudioSuccessIndicator();
+      } else {
+        console.error('❌ Failed to start audio capture:', response?.error);
+        showAudioErrorIndicator(response?.error || 'Failed to start audio capture');
+      }
+    }).catch(error => {
+      console.error('❌ Error requesting audio capture:', error);
+      showAudioErrorIndicator('Error requesting audio permission');
+    });
+  }
+
+  // Show success indicator
+  function showAudioSuccessIndicator() {
+    const notification = document.createElement('div');
+    notification.id = 'buzzer-audio-success';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #10b981;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      max-width: 300px;
+    `;
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 20px;">✅</div>
+        <div>
+          <div style="font-weight: 600; margin-bottom: 4px;">Audio Access Granted</div>
+          <div>System audio will be transcribed</div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 3000);
+  }
+
+  // Show error indicator
+  function showAudioErrorIndicator(error) {
+    const notification = document.createElement('div');
+    notification.id = 'buzzer-audio-error';
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ef4444;
+      color: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 1000000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      max-width: 300px;
+    `;
+    notification.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="font-size: 20px;">❌</div>
+        <div>
+          <div style="font-weight: 600; margin-bottom: 4px;">Audio Access Denied</div>
+          <div style="font-size: 12px;">${error}</div>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 5000);
+  }
+
+  // Enhanced caption detection for Google Meet
+  function enhanceGoogleMeetCaptions() {
+    if (window.location.hostname.includes('meet.google.com')) {
+      console.log('🎯 Enhancing Google Meet caption detection...');
+      
+      // Add custom styles to make captions more detectable
+      const style = document.createElement('style');
+      style.textContent = `
+        .iOzk7 {
+          transition: all 0.1s ease;
+        }
+        .caption-highlight {
+          background-color: rgba(255, 255, 0, 0.1) !important;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Watch for caption changes
+      const captionObserver = new MutationObserver((mutations) => {
+        console.log('🔍 Google Meet caption mutation detected');
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList' || mutation.type === 'characterData') {
+            console.log('📝 Caption content changed, notifying overlay');
+            // Notify the overlay that captions may have updated
+            if (window.buzzerOverlayInstance && typeof window.buzzerOverlayInstance.checkForLiveCaptions === 'function') {
+              // Throttle the calls to prevent spam
+              setTimeout(() => {
+                console.log('📡 Triggering caption check from MutationObserver');
+                window.buzzerOverlayInstance.checkForLiveCaptions();
+              }, 100);
+            } else {
+              console.log('⚠️ Overlay instance not ready for caption check');
+            }
+          }
+        });
+      });
+      
+      // Start observing after a delay to ensure elements are loaded
+      setTimeout(() => {
+        const captionContainer = document.querySelector('.iOzk7') || document.querySelector('[data-placeholder="Transcript"]');
+        if (captionContainer) {
+          console.log('✅ Google Meet caption container found, starting observer');
+          captionObserver.observe(captionContainer, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true
+          });
+        } else {
+          console.log('⚠️ Google Meet caption container not found');
+        }
+      }, 3000);
+    }
+  }
+
+  // Call the enhancement function after page loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', enhanceGoogleMeetCaptions);
+  } else {
+    enhanceGoogleMeetCaptions();
+  }
+
+  // Add a more aggressive caption detection for all platforms
+  function aggressiveCaptionDetection() {
+    console.log('🔍 Aggressive caption detection triggered');
+    
+    // Use the bridge to check for captions
+    if (typeof window.checkForLiveCaptions === 'function') {
+      console.log('✅ Bridge function found, calling checkForLiveCaptions');
+      window.checkForLiveCaptions();
+    } else {
+      console.log('⚠️ Bridge function not found');
+    }
+  }
+
+  // Check for captions more frequently when in a meeting
+  setInterval(() => {
+    if (meetingDetected) {
+      aggressiveCaptionDetection();
+    }
+  }, 500); // Check every 500ms when in a meeting
+
+})();
+
+// Add the bridge script to the page
+(function() {
+  // Create a script element for the bridge
+  const bridgeScript = document.createElement('script');
+  bridgeScript.src = chrome.runtime.getURL('ai-helper-window/overlay-bridge.js');
+  bridgeScript.onload = function() {
+    console.log('✅ Overlay bridge script loaded');
+  };
+  document.head.appendChild(bridgeScript);
+})();
+
+// Add the live caption detector script to the page
+(function() {
+  // Create a script element for the live caption detector
+  const detectorScript = document.createElement('script');
+  detectorScript.src = chrome.runtime.getURL('ai-helper-window/live-caption-detector.js');
+  detectorScript.onload = function() {
+    console.log('✅ Live caption detector script loaded');
+  };
+  document.head.appendChild(detectorScript);
 })();

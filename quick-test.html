@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Transcription Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .debug-console {
+            background-color: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Quick Transcription Test</h1>
+    
+    <div class="test-container">
+        <h2>Test Controls</h2>
+        <button onclick="testTranscription()">Test Transcription</button>
+        <button onclick="testLiveCaption()">Test Live Caption</button>
+        <button onclick="checkStatus()">Check Status</button>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+    
+    <div class="test-container">
+        <h2>Debug Console</h2>
+        <div class="debug-console" id="debug-console">
+[INFO] Quick test page loaded.
+        </div>
+    </div>
+
+    <script>
+        function logToConsole(message) {
+            const consoleElement = document.getElementById('debug-console');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleElement.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            console.log(`[TEST] ${message}`);
+        }
+        
+        function testTranscription() {
+            logToConsole('Testing transcription...');
+            if (typeof window.testTranscription === 'function') {
+                window.testTranscription();
+            } else {
+                logToConsole('❌ testTranscription function not available');
+            }
+        }
+        
+        function testLiveCaption() {
+            logToConsole('Testing live caption...');
+            if (typeof window.testLiveCaption === 'function') {
+                window.testLiveCaption();
+            } else {
+                logToConsole('❌ testLiveCaption function not available');
+            }
+        }
+        
+        function checkStatus() {
+            logToConsole('Checking status...');
+            logToConsole(`Overlay instance: ${!!window.buzzerOverlayInstance}`);
+            if (window.buzzerOverlayInstance) {
+                logToConsole(`Transcription items: ${window.buzzerOverlayInstance.transcriptionItems?.length || 0}`);
+            }
+        }
+        
+        function clearConsole() {
+            document.getElementById('debug-console').innerHTML = '';
+        }
+        
+        // Auto-initialize
+        window.addEventListener('load', function() {
+            logToConsole('Quick test page loaded');
+            logToConsole('Use the buttons above to test transcription functionality');
+        });
+    </script>
+</body>
+</html>

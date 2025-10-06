@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Enhanced Transcription Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .test-area {
+            border: 2px dashed #ccc;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .caption-simulator {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .transcription-display {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            min-height: 150px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-family: monospace;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.secondary {
+            background-color: #2196F3;
+        }
+        button.secondary:hover {
+            background-color: #1976D2;
+        }
+        button.danger {
+            background-color: #f44336;
+        }
+        button.danger:hover {
+            background-color: #d32f2f;
+        }
+        .debug-console {
+            background-color: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .status-indicator {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status-ok {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <h1>Enhanced Transcription Test Page</h1>
+    
+    <div class="container">
+        <h2>System Status</h2>
+        <div id="status-indicator" class="status-indicator status-warning">
+            ⚠️ Waiting for Buzzer AI Helper to initialize...
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Caption Simulator</h2>
+        <div class="caption-simulator">
+            <p>This simulates live captions that would appear in a meeting:</p>
+            <div id="live-caption" class="iOzk7" style="font-weight: bold; color: #10b981; font-size: 18px;">
+                Hello, welcome to the interview. Please tell me about yourself.
+            </div>
+        </div>
+        
+        <button onclick="updateCaption()">🔄 Update Caption</button>
+        <button class="secondary" onclick="startAutoUpdates()">▶️ Start Auto Updates</button>
+        <button class="danger" onclick="stopAutoUpdates()">⏹️ Stop Auto Updates</button>
+    </div>
+    
+    <div class="container">
+        <h2>Direct Testing</h2>
+        <div class="test-area">
+            <p>Test the transcription system directly:</p>
+            <button onclick="testDirectTranscription()">📝 Test Direct Transcription</button>
+            <button onclick="testLiveCaption()">📺 Test Live Caption Processing</button>
+            <button onclick="testCaptionDetection()">🔍 Test Caption Detection</button>
+            <button class="danger" onclick="clearTranscriptions()">🗑️ Clear All Transcriptions</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Transcription Display</h2>
+        <div class="transcription-display" id="transcription-output">
+            Transcription items should appear here when processed.
+        </div>
+        <div>
+            <strong>Item Count:</strong> <span id="item-count">0</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <h2>Debug Console</h2>
+        <div class="debug-console" id="debug-console">
+[INFO] Test page loaded. Waiting for buzzerOverlayInstance...
+        </div>
+        <button class="secondary" onclick="runComprehensiveDebug()">🔬 Run Comprehensive Debug</button>
+        <button class="danger" onclick="clearConsole()">🧹 Clear Console</button>
+    </div>
+
+    <script>
+        // Sample captions for testing
+        const sampleCaptions = [
+            "Hello, how are you doing today?",
+            "Can you tell me about your experience?",
+            "What challenges have you faced in your previous roles?",
+            "How do you handle difficult situations at work?",
+            "What are your strengths and weaknesses?",
+            "Why do you want to work for our company?",
+            "Where do you see yourself in five years?",
+            "Tell me about a time you had to work under pressure.",
+            "How do you prioritize your work when everything seems urgent?",
+            "Describe a situation where you had to convince someone to see your point of view."
+        ];
+        
+        let captionCounter = 0;
+        let autoUpdateInterval = null;
+        
+        // Update status indicator
+        function updateStatus(message, type = 'warning') {
+            const statusElement = document.getElementById('status-indicator');
+            statusElement.textContent = message;
+            statusElement.className = 'status-indicator status-' + type;
+        }
+        
+        function updateCaption() {
+            const captionElement = document.getElementById('live-caption');
+            const randomCaption = sampleCaptions[Math.floor(Math.random() * sampleCaptions.length)];
+            captionElement.textContent = randomCaption + " (Update #" + (++captionCounter) + ")";
+            
+            // Log to debug console
+            logToConsole('Caption updated: ' + captionElement.textContent);
+        }
+        
+        function startAutoUpdates() {
+            if (autoUpdateInterval) {
+                clearInterval(autoUpdateInterval);
+            }
+            
+            autoUpdateInterval = setInterval(() => {
+                updateCaption();
+                logToConsole('🔄 Auto caption update triggered');
+            }, 3000);
+            
+            logToConsole('▶️ Auto updates started (every 3 seconds)');
+        }
+        
+        function stopAutoUpdates() {
+            if (autoUpdateInterval) {
+                clearInterval(autoUpdateInterval);
+                autoUpdateInterval = null;
+                logToConsole('⏹️ Auto updates stopped');
+            }
+        }
+        
+        function testDirectTranscription() {
+            if (window.buzzerOverlayInstance) {
+                try {
+                    const testText = "Direct transcription test message #" + (++captionCounter);
+                    window.buzzerOverlayInstance.addTranscriptionItem('Test', testText, 'interviewer');
+                    logToConsole('✅ Direct transcription added: ' + testText);
+                    updateTranscriptionDisplay();
+                } catch (error) {
+                    logToConsole('❌ Direct transcription failed: ' + error.message);
+                }
+            } else {
+                logToConsole('❌ buzzerOverlayInstance not found');
+                updateStatus('❌ Error: Buzzer AI Helper not found!', 'error');
+            }
+        }
+        
+        function testLiveCaption() {
+            if (window.buzzerOverlayInstance) {
+                try {
+                    const testText = "Live caption test message #" + (++captionCounter);
+                    window.buzzerOverlayInstance.processLiveCaption(testText);
+                    logToConsole('✅ Live caption processed: ' + testText);
+                    updateTranscriptionDisplay();
+                } catch (error) {
+                    logToConsole('❌ Live caption processing failed: ' + error.message);
+                }
+            } else {
+                logToConsole('❌ buzzerOverlayInstance not found');
+                updateStatus('❌ Error: Buzzer AI Helper not found!', 'error');
+            }
+        }
+        
+        function testCaptionDetection() {
+            if (window.buzzerOverlayInstance) {
+                try {
+                    logToConsole('🔍 Running caption detection...');
+                    window.buzzerOverlayInstance.checkForLiveCaptions();
+                    logToConsole('✅ Caption detection completed');
+                } catch (error) {
+                    logToConsole('❌ Caption detection failed: ' + error.message);
+                }
+            } else {
+                logToConsole('❌ buzzerOverlayInstance not found');
+                updateStatus('❌ Error: Buzzer AI Helper not found!', 'error');
+            }
+        }
+        
+        function clearTranscriptions() {
+            if (window.buzzerOverlayInstance) {
+                window.buzzerOverlayInstance.transcriptionItems = [];
+                const list = document.querySelector('.transcription-list');
+                if (list) {
+                    list.innerHTML = '';
+                }
+                updateTranscriptionDisplay();
+                logToConsole('🗑️ All transcriptions cleared');
+            } else {
+                logToConsole('❌ buzzerOverlayInstance not found');
+            }
+        }
+        
+        function updateTranscriptionDisplay() {
+            const outputElement = document.getElementById('transcription-output');
+            const countElement = document.getElementById('item-count');
+            
+            if (window.buzzerOverlayInstance) {
+                const items = window.buzzerOverlayInstance.transcriptionItems || [];
+                countElement.textContent = items.length;
+                
+                if (items.length > 0) {
+                    outputElement.innerHTML = '<strong>Recent items:</strong><br>' + 
+                        items.slice(0, 10).map(item => 
+                            `[${item.timestamp}] <strong>${item.speaker}:</strong> ${item.text}`
+                        ).join('<br>');
+                } else {
+                    outputElement.innerHTML = 'No transcription items yet.';
+                }
+            } else {
+                outputElement.innerHTML = 'Buzzer AI Helper not initialized.';
+                countElement.textContent = '0';
+            }
+        }
+        
+        function logToConsole(message) {
+            const consoleElement = document.getElementById('debug-console');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleElement.innerHTML += '[' + timestamp + '] ' + message + '\n';
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            
+            // Also log to browser console
+            console.log('[TEST PAGE] ' + message);
+        }
+        
+        function clearConsole() {
+            document.getElementById('debug-console').innerHTML = '';
+            logToConsole('🧹 Console cleared');
+        }
+        
+        function runComprehensiveDebug() {
+            logToConsole('🔬 Running comprehensive debug...');
+            
+            // Load and run the comprehensive debug script
+            const script = document.createElement('script');
+            script.src = 'comprehensive-debug.js';
+            script.onload = function() {
+                logToConsole('✅ Comprehensive debug script loaded and executed');
+            };
+            script.onerror = function() {
+                logToConsole('❌ Failed to load comprehensive debug script');
+            };
+            document.head.appendChild(script);
+        }
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            logToConsole('🚀 Test page loaded. Waiting for buzzerOverlayInstance...');
+            
+            // Check for overlay instance periodically
+            const checkInterval = setInterval(() => {
+                if (window.buzzerOverlayInstance) {
+                    logToConsole('✅ buzzerOverlayInstance detected');
+                    updateStatus('✅ Buzzer AI Helper is active and ready!', 'ok');
+                    clearInterval(checkInterval);
+                    
+                    // Set up periodic updates
+                    setInterval(() => {
+                        updateTranscriptionDisplay();
+                    }, 1000);
+                }
+            }, 1000);
+            
+            // Simulate initial caption update
+            setTimeout(() => {
+                updateCaption();
+            }, 2000);
+        });
+        
+        // Clean up on unload
+        window.addEventListener('beforeunload', function() {
+            stopAutoUpdates();
+        });
+    </script>
+</body>
+</html>

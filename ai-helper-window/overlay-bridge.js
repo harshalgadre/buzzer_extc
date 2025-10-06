@@ -1,220 +1,92 @@
-// overlay-bridge.js - Bridge between popup.js and ExtensionWindow.jsx
-// This file handles the screen sharing initiation and passes data to the React component
+// Overlay Bridge - Connects content script with React component
+// This script provides a bridge between the content script and the React component
 
-(function() {
-  // Prevent multiple injections
-  if (window.BuzzerAIHelper) {
-    return;
-  }
+console.log('🌉 Overlay Bridge Loading...');
 
-  class BuzzerAIHelper {
-    constructor() {
-      this.isScreenSharing = false;
-      this.isUserMicOn = false;
-      this.screenStream = null;
-      this.userMicStream = null;
-      this.systemRecognition = null;
-      this.userRecognition = null;
-      this.transcriptionItems = [];
-      this.callbacks = [];
-      
-      this.init();
-    }
-
-    init() {
-      // Initialize Speech Recognition
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        this.setupSpeechRecognition();
-      }
-
-      // Listen for messages from extension
-      chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.action === 'startScreenSharing') {
-          this.startScreenSharing().then(sendResponse);
-          return true;
-        }
-        if (message.action === 'toggleUserMic') {
-          this.toggleUserMic().then(sendResponse);
-          return true;
-        }
-      });
-    }
-
-    setupSpeechRecognition() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      
-      // System audio recognition (for interviewer)
-      this.systemRecognition = new SpeechRecognition();
-      this.systemRecognition.continuous = true;
-      this.systemRecognition.interimResults = false;
-      this.systemRecognition.lang = 'en-US';
-      
-      this.systemRecognition.onresult = (event) => {
-        const lastResult = event.results[event.results.length - 1];
-        if (lastResult.isFinal) {
-          const transcript = lastResult[0].transcript.trim();
-          if (transcript) {
-            this.addTranscriptionItem('Interviewer', transcript, 'interviewer');
-          }
-        }
-      };
-      
-      this.systemRecognition.onerror = (event) => {
-        console.error('System STT error:', event.error);
-      };
-
-      // User microphone recognition
-      this.userRecognition = new SpeechRecognition();
-      this.userRecognition.continuous = true;
-      this.userRecognition.interimResults = false;
-      this.userRecognition.lang = 'en-US';
-      
-      this.userRecognition.onresult = (event) => {
-        const lastResult = event.results[event.results.length - 1];
-        if (lastResult.isFinal) {
-          const transcript = lastResult[0].transcript.trim();
-          if (transcript) {
-            this.addTranscriptionItem('User', transcript, 'user');
-          }
-        }
-      };
-      
-      this.userRecognition.onerror = (event) => {
-        console.error('User STT error:', event.error);
-      };
-    }
-
-    async startScreenSharing() {
-      try {
-        // Request screen sharing with audio
-        const stream = await navigator.mediaDevices.getDisplayMedia({
-          video: true,
-          audio: true
-        });
-        
-        this.screenStream = stream;
-        this.isScreenSharing = true;
-        
-        // Start system audio STT
-        if (stream.getAudioTracks().length > 0 && this.systemRecognition) {
-          this.systemRecognition.start();
-          this.addTranscriptionItem('AI', 'Started capturing system audio and transcribing interviewer speech.', 'ai');
-        }
-        
-        // Handle stream end
-        stream.getVideoTracks()[0].onended = () => {
-          this.stopScreenSharing();
-        };
-        
-        this.notifyCallbacks('screenSharingStarted');
-        return { success: true };
-        
-      } catch (error) {
-        console.error('Screen sharing failed:', error);
-        this.addTranscriptionItem('AI', 'Screen sharing failed. Please try again and allow permissions.', 'ai');
-        return { success: false, error: error.message };
-      }
-    }
-
-    stopScreenSharing() {
-      if (this.screenStream) {
-        this.screenStream.getTracks().forEach(track => track.stop());
-        this.screenStream = null;
-      }
-      
-      if (this.systemRecognition) {
-        try {
-          this.systemRecognition.stop();
-        } catch (e) {
-          console.log('System recognition already stopped');
-        }
-      }
-      
-      this.isScreenSharing = false;
-      this.addTranscriptionItem('AI', 'Stopped screen sharing and system audio capture.', 'ai');
-      this.notifyCallbacks('screenSharingStopped');
-    }
-
-    async toggleUserMic() {
-      if (!this.isUserMicOn) {
-        try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          this.userMicStream = stream;
-          this.isUserMicOn = true;
-          
-          if (this.userRecognition) {
-            this.userRecognition.start();
-          }
-          
-          this.addTranscriptionItem('AI', 'Started capturing your microphone audio.', 'ai');
-          this.notifyCallbacks('userMicStarted');
-          return { success: true };
-        } catch (error) {
-          console.error('Microphone access failed:', error);
-          this.addTranscriptionItem('AI', 'Microphone access failed. Please allow microphone permissions.', 'ai');
-          return { success: false, error: error.message };
-        }
-      } else {
-        if (this.userMicStream) {
-          this.userMicStream.getTracks().forEach(track => track.stop());
-          this.userMicStream = null;
-        }
-        
-        if (this.userRecognition) {
-          try {
-            this.userRecognition.stop();
-          } catch (e) {
-            console.log('User recognition already stopped');
-          }
-        }
-        
-        this.isUserMicOn = false;
-        this.addTranscriptionItem('AI', 'Stopped microphone capture.', 'ai');
-        this.notifyCallbacks('userMicStopped');
-        return { success: true };
-      }
-    }
-
-    addTranscriptionItem(speaker, text, type) {
-      const item = {
-        id: Date.now() + Math.random(),
-        speaker,
-        text,
-        type,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      
-      this.transcriptionItems.push(item);
-      this.notifyCallbacks('transcriptionAdded', item);
-    }
-
-    onCallback(callback) {
-      this.callbacks.push(callback);
-    }
-
-    notifyCallbacks(event, data) {
-      this.callbacks.forEach(callback => {
-        try {
-          callback(event, data);
-        } catch (error) {
-          console.error('Callback error:', error);
-        }
-      });
-    }
-
-    getState() {
-      return {
-        isScreenSharing: this.isScreenSharing,
-        isUserMicOn: this.isUserMicOn,
-        transcriptionItems: this.transcriptionItems
-      };
-    }
-  }
-
-  // Initialize the helper
-  window.BuzzerAIHelper = new BuzzerAIHelper();
+// Create a bridge object
+window.buzzerOverlayBridge = {
+  // Store callbacks
+  callbacks: {},
   
-  // Notify that the helper is ready
-  console.log('Buzzer AI Helper initialized');
-})();
+  // Add transcription item
+  addTranscriptionItem: function(speaker, text, type) {
+    console.log('🌉 Bridge: addTranscriptionItem called', { speaker, text, type });
+    
+    // If we're in the React version, try to call its method
+    if (window.addTranscriptionItemToReact) {
+      window.addTranscriptionItemToReact(speaker, text, type);
+    } 
+    // If we're in the original version, call the overlay instance method
+    else if (window.buzzerOverlayInstance && typeof window.buzzerOverlayInstance.addTranscriptionItem === 'function') {
+      window.buzzerOverlayInstance.addTranscriptionItem(speaker, text, type);
+    }
+    // If neither is available, store it for later
+    else {
+      console.log('🌉 Bridge: No target found, storing for later');
+      if (!this.callbacks.pendingItems) {
+        this.callbacks.pendingItems = [];
+      }
+      this.callbacks.pendingItems.push({ speaker, text, type });
+    }
+  },
+  
+  // Process live caption
+  processLiveCaption: function(text) {
+    console.log('🌉 Bridge: processLiveCaption called', text);
+    
+    // If we're in the React version, try to call its method
+    if (window.processLiveCaptionInReact) {
+      window.processLiveCaptionInReact(text);
+    } 
+    // If we're in the original version, call the overlay instance method
+    else if (window.buzzerOverlayInstance && typeof window.buzzerOverlayInstance.processLiveCaption === 'function') {
+      window.buzzerOverlayInstance.processLiveCaption(text);
+    }
+  },
+  
+  // Check for live captions
+  checkForLiveCaptions: function() {
+    console.log('🌉 Bridge: checkForLiveCaptions called');
+    
+    // If we're in the React version, try to call its method
+    if (window.checkForLiveCaptionsInReact) {
+      window.checkForLiveCaptionsInReact();
+    } 
+    // If we're in the original version, call the overlay instance method
+    else if (window.buzzerOverlayInstance && typeof window.buzzerOverlayInstance.checkForLiveCaptions === 'function') {
+      window.buzzerOverlayInstance.checkForLiveCaptions();
+    }
+  },
+  
+  // Register React callbacks
+  registerReactCallbacks: function(callbacks) {
+    console.log('🌉 Bridge: Registering React callbacks');
+    this.callbacks = { ...this.callbacks, ...callbacks };
+    
+    // If there are pending items, process them
+    if (this.callbacks.pendingItems && this.callbacks.pendingItems.length > 0) {
+      console.log('🌉 Bridge: Processing pending items');
+      this.callbacks.pendingItems.forEach(item => {
+        if (this.callbacks.addTranscriptionItem) {
+          this.callbacks.addTranscriptionItem(item.speaker, item.text, item.type);
+        }
+      });
+      this.callbacks.pendingItems = [];
+    }
+  }
+};
+
+// Make bridge functions globally accessible
+window.addTranscriptionItem = function(speaker, text, type) {
+  window.buzzerOverlayBridge.addTranscriptionItem(speaker, text, type);
+};
+
+window.processLiveCaption = function(text) {
+  window.buzzerOverlayBridge.processLiveCaption(text);
+};
+
+window.checkForLiveCaptions = function() {
+  window.buzzerOverlayBridge.checkForLiveCaptions();
+};
+
+console.log('✅ Overlay Bridge Ready');

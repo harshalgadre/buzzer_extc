@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Caption Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .caption-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 100px;
+            background: #f9f9f9;
+        }
+        .caption {
+            font-size: 18px;
+            color: #333;
+            margin: 10px 0;
+            padding: 10px;
+            background: #eef;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Live Caption Test Page</h1>
+        <p>This page simulates live captions for testing the AI Helper extension.</p>
+        
+        <div class="controls">
+            <button onclick="addCaption()">Add Live Caption</button>
+            <button onclick="addGoogleMeetCaption()">Add Google Meet Caption</button>
+            <button onclick="addZoomCaption()">Add Zoom Caption</button>
+            <button onclick="clearCaptions()">Clear Captions</button>
+        </div>
+        
+        <div class="status" id="status">
+            Waiting for captions...
+        </div>
+        
+        <h2>Simulated Caption Areas</h2>
+        
+        <!-- Google Meet Style Captions -->
+        <div class="caption-area">
+            <h3>Google Meet Captions</h3>
+            <div class="iOzk7" data-placeholder="Transcript">
+                <div class="caption">Hello, this is a test caption from Google Meet.</div>
+            </div>
+        </div>
+        
+        <!-- Zoom Style Captions -->
+        <div class="caption-area">
+            <h3>Zoom Captions</h3>
+            <div class="caption-container">
+                <div class="captions-timestamp">00:01</div>
+                <div class="speaker-label">Speaker 1:</div>
+                <div class="caption-text-content">This is a test caption from Zoom.</div>
+            </div>
+        </div>
+        
+        <!-- Generic Live Transcript -->
+        <div class="caption-area">
+            <h3>Generic Live Transcript</h3>
+            <div class="live-transcript-content">
+                <div class="caption">This is a generic live transcript caption.</div>
+            </div>
+        </div>
+        
+        <!-- Test ID Captions -->
+        <div class="caption-area">
+            <h3>Test ID Captions</h3>
+            <div data-testid="caption-text">
+                <div class="caption">This caption has a test ID attribute.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let captionCounter = 1;
+        
+        function addCaption() {
+            // Add to Google Meet style
+            const meetContainer = document.querySelector('.iOzk7');
+            if (meetContainer) {
+                const caption = document.createElement('div');
+                caption.className = 'caption';
+                caption.textContent = `Test caption ${captionCounter}: This is an automatically generated live caption.`;
+                meetContainer.appendChild(caption);
+                captionCounter++;
+                
+                updateStatus('success', `Added caption to Google Meet area`);
+            }
+        }
+        
+        function addGoogleMeetCaption() {
+            const meetContainer = document.querySelector('.iOzk7');
+            if (meetContainer) {
+                const caption = document.createElement('div');
+                caption.className = 'caption';
+                caption.textContent = `Google Meet test caption ${captionCounter}: Real-time transcription is working.`;
+                meetContainer.appendChild(caption);
+                captionCounter++;
+                
+                updateStatus('success', `Added Google Meet caption`);
+            }
+        }
+        
+        function addZoomCaption() {
+            const zoomContainer = document.querySelector('.caption-container');
+            if (zoomContainer) {
+                const timestamp = document.createElement('div');
+                timestamp.className = 'captions-timestamp';
+                timestamp.textContent = `${Math.floor(captionCounter/60)}:${(captionCounter%60).toString().padStart(2, '0')}`;
+                
+                const speaker = document.createElement('div');
+                speaker.className = 'speaker-label';
+                speaker.textContent = 'Test Speaker:';
+                
+                const text = document.createElement('div');
+                text.className = 'caption-text-content';
+                text.textContent = `Zoom test caption ${captionCounter}: Live captions are being detected.`;
+                
+                zoomContainer.appendChild(timestamp);
+                zoomContainer.appendChild(speaker);
+                zoomContainer.appendChild(text);
+                captionCounter++;
+                
+                updateStatus('success', `Added Zoom caption`);
+            }
+        }
+        
+        function clearCaptions() {
+            // Clear all captions
+            document.querySelectorAll('.caption').forEach(el => el.remove());
+            document.querySelectorAll('.caption-text-content').forEach(el => el.remove());
+            document.querySelectorAll('.speaker-label').forEach(el => el.remove());
+            document.querySelectorAll('.captions-timestamp').forEach(el => el.remove());
+            
+            updateStatus('success', 'All captions cleared');
+        }
+        
+        function updateStatus(type, message) {
+            const status = document.getElementById('status');
+            status.className = 'status ' + type;
+            status.textContent = message;
+            
+            // Auto-clear status after 3 seconds
+            setTimeout(() => {
+                status.textContent = 'Waiting for captions...';
+                status.className = 'status';
+            }, 3000);
+        }
+        
+        // Add some initial captions
+        setTimeout(() => {
+            addCaption();
+            addGoogleMeetCaption();
+        }, 1000);
+    </script>
+</body>
+</html>

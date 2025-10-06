@@ -153,15 +153,12 @@ class ExtensionWindow {
   getFallbackAnswer(question) {
     const lowerQ = question.toLowerCase();
     
-    if (lowerQ.includes('javascript')) {
-      return 'JavaScript is a dynamic programming language primarily used for web development. It enables interactive web pages and is an essential part of modern web applications alongside HTML and CSS.';
-    } else if (lowerQ.includes('html')) {
-      return 'HTML (HyperText Markup Language) is the standard markup language for creating web pages. It describes the structure and content of web pages using elements and tags.';
-    } else if (lowerQ.includes('nodejs') || lowerQ.includes('node.js')) {
-      return 'Node.js is a JavaScript runtime environment that allows you to run JavaScript on the server side. It\'s commonly used for building scalable web applications and APIs.';
-    } else if (lowerQ.includes('css')) {
-      return 'CSS (Cascading Style Sheets) is a stylesheet language used to describe the presentation and styling of HTML documents, controlling layout, colors, fonts, and visual appearance.';
+    if (lowerQ.includes('how to') || lowerQ.includes('what is') || lowerQ.includes('why does')) {
+      return 'I\'m sorry, but I\'m not able to provide step-by-step instructions at this time. However, I can certainly guide you through the process.';
+    } else if (lowerQ.includes('where can') || lowerQ.includes('who is') || lowerQ.includes('which one')) {
+      return 'I\'d be happy to help with that question. Could you provide more specific details so I can give you a more targeted answer?';
     } else {
+      return 'I\'m sorry, but I\'m not able to provide the information you\'re looking for at this time. However, I can certainly help guide you through the process.';
       return 'I\'d be happy to help with that question. Could you provide more specific details so I can give you a more targeted answer?';
     }
   }

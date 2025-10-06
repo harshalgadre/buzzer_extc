@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complete Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .test-area {
+            border: 2px dashed #ccc;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button.secondary {
+            background-color: #2196F3;
+        }
+        button.secondary:hover {
+            background-color: #1976D2;
+        }
+        button.warning {
+            background-color: #FF9800;
+        }
+        button.warning:hover {
+            background-color: #F57C00;
+        }
+        button.danger {
+            background-color: #f44336;
+        }
+        button.danger:hover {
+            background-color: #d32f2f;
+        }
+        .debug-console {
+            background-color: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        .status-indicator {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status-ok {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .status-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Complete Functionality Test</h1>
+        <p>This test verifies that both live captions and system audio capturing work correctly.</p>
+    </div>
+    
+    <div class="container">
+        <h2>Bridge Tests</h2>
+        <button onclick="testBridge()">🌉 Test Bridge</button>
+        <button class="secondary" onclick="testGlobalFunctions()">🌍 Test Global Functions</button>
+    </div>
+    
+    <div class="container">
+        <h2>Component Tests</h2>
+        <button onclick="testReactFunctions()">⚛️ Test React Functions</button>
+        <button class="secondary" onclick="testOriginalFunctions()">🔄 Test Original Functions</button>
+    </div>
+    
+    <div class="container">
+        <h2>Live Caption Tests</h2>
+        <button class="warning" onclick="simulateLiveCaption()">🎤 Simulate Live Caption</button>
+        <button class="warning" onclick="checkForCaptions()">🔍 Check for Captions</button>
+    </div>
+    
+    <div class="container">
+        <h2>Debug Console</h2>
+        <div class="debug-console" id="debug-console">
+[INFO] Complete functionality test loaded. Click buttons above to run tests.
+        </div>
+        <button class="danger" onclick="clearConsole()">🧹 Clear Console</button>
+    </div>
+
+    <script>
+        function logToConsole(message) {
+            const consoleElement = document.getElementById('debug-console');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleElement.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+            console.log(`[COMPLETE TEST] ${message}`);
+        }
+        
+        function clearConsole() {
+            document.getElementById('debug-console').innerHTML = '';
+            logToConsole('🧹 Console cleared');
+        }
+        
+        // Load and run the verification script
+        function loadVerificationScript() {
+            const script = document.createElement('script');
+            script.src = 'final-verification.js';
+            script.onload = function() {
+                logToConsole('✅ Verification script loaded');
+            };
+            script.onerror = function() {
+                logToConsole('❌ Failed to load verification script');
+            };
+            document.head.appendChild(script);
+        }
+        
+        // Test functions
+        function testBridge() {
+            logToConsole('🌉 Testing bridge functionality...');
+            loadVerificationScript();
+            
+            setTimeout(() => {
+                if (typeof window.testBridge === 'function') {
+                    window.testBridge();
+                } else {
+                    logToConsole('❌ testBridge function not available');
+                }
+            }, 100);
+        }
+        
+        function testGlobalFunctions() {
+            logToConsole('🌍 Testing global functions...');
+            loadVerificationScript();
+            
+            setTimeout(() => {
+                if (typeof window.testGlobalFunctions === 'function') {
+                    window.testGlobalFunctions();
+                } else {
+                    logToConsole('❌ testGlobalFunctions function not available');
+                }
+            }, 100);
+        }
+        
+        function testReactFunctions() {
+            logToConsole('⚛️ Testing React component functions...');
+            loadVerificationScript();
+            
+            setTimeout(() => {
+                if (typeof window.testReactFunctions === 'function') {
+                    window.testReactFunctions();
+                } else {
+                    logToConsole('❌ testReactFunctions function not available');
+                }
+            }, 100);
+        }
+        
+        function testOriginalFunctions() {
+            logToConsole('🔄 Testing original overlay functions...');
+            loadVerificationScript();
+            
+            setTimeout(() => {
+                if (typeof window.testOriginalFunctions === 'function') {
+                    window.testOriginalFunctions();
+                } else {
+                    logToConsole('❌ testOriginalFunctions function not available');
+                }
+            }, 100);
+        }
+        
+        function simulateLiveCaption() {
+            logToConsole('🎤 Simulating live caption...');
+            
+            // Create a simulated caption element
+            const captionElement = document.createElement('div');
+            captionElement.className = 'simulated-caption';
+            captionElement.textContent = `Simulated live caption at ${new Date().toLocaleTimeString()}`;
+            captionElement.style.position = 'fixed';
+            captionElement.style.bottom = '50px';
+            captionElement.style.left = '50%';
+            captionElement.style.transform = 'translateX(-50%)';
+            captionElement.style.background = 'rgba(0, 0, 0, 0.8)';
+            captionElement.style.color = 'white';
+            captionElement.style.padding = '10px';
+            captionElement.style.borderRadius = '5px';
+            captionElement.style.zIndex = '999999';
+            document.body.appendChild(captionElement);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (captionElement.parentNode) {
+                    captionElement.parentNode.removeChild(captionElement);
+                }
+            }, 3000);
+            
+            // Try to process it
+            if (typeof window.processLiveCaption === 'function') {
+                window.processLiveCaption(captionElement.textContent);
+                logToConsole('✅ Live caption processed');
+            } else {
+                logToConsole('❌ processLiveCaption function not available');
+            }
+        }
+        
+        function checkForCaptions() {
+            logToConsole('🔍 Checking for live captions...');
+            
+            if (typeof window.checkForLiveCaptions === 'function') {
+                window.checkForLiveCaptions();
+                logToConsole('✅ Caption detection triggered');
+            } else {
+                logToConsole('❌ checkForLiveCaptions function not available');
+            }
+        }
+        
+        // Auto-initialize
+        window.addEventListener('load', function() {
+            logToConsole('🚀 Complete functionality test loaded');
+            logToConsole('💡 Make sure the Buzzer AI Helper overlay is active before testing');
+            loadVerificationScript();
+        });
+    </script>
+</body>
+</html>

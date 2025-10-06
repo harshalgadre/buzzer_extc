@@ -15,6 +15,10 @@ This Chrome extension provides a floating AI helper overlay that appears during 
   - Topic suggestions
   - AI-powered help responses
   - Screenshot and control features
+- **Enhanced Audio Capture**: Captures system audio from meeting tabs for transcription
+  - Automatic audio permission requests
+  - Visual feedback for audio activity
+  - WhatsApp-style chat interface for transcriptions
 
 ## 🛠️ Installation & Testing
 
@@ -44,6 +48,12 @@ This Chrome extension provides a floating AI helper overlay that appears during 
 2. Click "Open AI Helper" in the popup
 3. The overlay will appear on the current tab
 
+#### Option D: Audio Capture Test
+1. Open `test-audio-capture.html` in Chrome
+2. Click "Start Audio Capture"
+3. Play audio in another tab
+4. Observe transcription output in the test page
+
 ### 3. Test Overlay Features
 
 - **Close**: Click outside the overlay or use the X button in the top control pill
@@ -51,6 +61,7 @@ This Chrome extension provides a floating AI helper overlay that appears during 
 - **Input**: Type in the bottom input field and press Enter or Space
 - **Help Button**: Click "Help Me" to trigger AI responses
 - **Callout**: Close the brown notification callout using the X button
+- **Audio Capture**: System audio is automatically captured and transcribed during meetings
 
 ## 📁 File Structure
 
@@ -62,6 +73,8 @@ buzzer_extc/
 ├── popup.html                      # Extension popup interface
 ├── popup.js                        # Popup functionality
 ├── test-page.html                  # Test page for overlay functionality
+├── test-audio-capture.html         # Test page for audio capture functionality
+├── AUDIO_CAPTURE_README.md         # Documentation for audio capture features
 ├── ai-helper-window/
 │   ├── index.html                  # Main overlay structure (standalone)
 │   ├── styles.css                  # Complete CSS with overlay styles
@@ -97,10 +110,17 @@ buzzer_extc/
 - Uses MutationObserver for dynamic content detection
 - Supports Single Page Application (SPA) navigation changes
 
+### Audio Capture
+- Uses Chrome's `tabCapture` API to capture system audio
+- Processes audio in 2-second chunks for real-time transcription
+- Displays transcriptions in WhatsApp-style chat interface
+- Automatically requests audio permissions when starting AI helper
+
 ### Message Flow
 1. Content script detects meeting → Background script
 2. Background script injects overlay into active tab
 3. Overlay provides interactive AI assistance interface
+4. Audio capture sends chunks to content script for transcription display
 
 ## 🐛 Troubleshooting
 
@@ -120,6 +140,12 @@ buzzer_extc/
 - Wait a few seconds after joining the meeting
 - Try manually triggering from the extension popup
 
+### Audio Capture Issues
+- Ensure you've granted audio capture permissions
+- Check that the tab actually has audio playing
+- Verify that `tabCapture` permission is enabled in `manifest.json`
+- See `AUDIO_CAPTURE_README.md` for detailed troubleshooting
+
 ## 📝 Recent Updates
 
 - ✅ Converted from popup window to floating overlay
@@ -128,6 +154,10 @@ buzzer_extc/
 - ✅ Implemented smooth slide-in/out animations
 - ✅ Added manual trigger functionality
 - ✅ Created comprehensive test page
+- ✅ **Enhanced audio capture with system audio transcription**
+- ✅ **Added WhatsApp-style chat interface for transcriptions**
+- ✅ **Implemented automatic audio permission requests**
+- ✅ **Added visual feedback for audio activity**
 
 ---
 

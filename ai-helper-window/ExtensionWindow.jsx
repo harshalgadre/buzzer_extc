@@ -23,7 +23,7 @@ const ExtensionWindow = () => {
 
   // Gemini API configuration
   const geminiApiKey = 'AIzaSyALmZY3vJq-4PFIUaHl4ZZsYGXdMkI7fCM'; // Replace with your actual API key
-  const geminiApiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+  const geminiApiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-exp:generateContent';
   
   // Refs for media streams and recognition
   const userMicStreamRef = useRef(null);
@@ -223,6 +223,28 @@ const ExtensionWindow = () => {
     };
   }, [addTranscriptionItem]);
 
+  // Initialize live caption detection
+  useEffect(() => {
+    console.log('🎬 ExtensionWindow mounted, initializing live caption detection...');
+    
+    // Initialize system audio capture for live captions
+    initializeSystemAudio();
+    
+    // Set up live caption detection interval using global detector
+    const captionInterval = setInterval(() => {
+      if (typeof window.checkForLiveCaptions === 'function') {
+        window.checkForLiveCaptions();
+      }
+    }, 500); // Check every 500ms
+    
+    // Clean up interval on unmount
+    return () => {
+      if (captionInterval) {
+        clearInterval(captionInterval);
+      }
+    };
+  }, []);
+
   // Initialize system audio capture (assuming screen sharing is already active)
   const initializeSystemAudio = useCallback(async () => {
     try {
@@ -232,6 +254,16 @@ const ExtensionWindow = () => {
         systemRecognitionRef.current.start();
         addTranscriptionItem('AI', 'System audio transcription active.', 'ai');
       }
+      
+      // Also notify that we're ready for live captions
+      addTranscriptionItem('AI', 'Live caption detection active. Looking for captions...', 'ai');
+      
+      // Trigger initial caption check
+      setTimeout(() => {
+        if (typeof window.checkForLiveCaptions === 'function') {
+          window.checkForLiveCaptions();
+        }
+      }, 2000);
     } catch (error) {
       console.error('System audio initialization failed:', error);
       addTranscriptionItem('AI', 'System audio initialization failed.', 'ai');
@@ -512,7 +544,7 @@ const ExtensionWindow = () => {
           <div className="status-indicators">
             {isSystemAudioOn && (
               <span className="status-badge system">
-                � System
+                🎙️ System
               </span>
             )}
             {isUserMicOn && (

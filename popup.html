@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    
+
     /* Reset */
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      width: 500px;
-      height: 650px;
+      width: 700px;
+      height: 625px;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: #ffffff;
       color: #1f2937;
@@ -26,52 +27,51 @@
     }
 
     /* Login Screen */
-    .login-container { 
-      display: flex; 
-      height: 650px; 
-      background: #ffffff;
-      padding: 0;
+
+    .login-container {
+      display: flex;
+      height: 100%;
     }
 
     .login-left {
       flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      align-items: flex-start;
+      /* 👈 align everything to the left */
       justify-content: center;
-      padding: 48px 40px;
-      text-align: center;
+      padding: 48px 60px;
       background: #ffffff;
+      text-align: left;
+      /* 👈 left-align text */
     }
 
     .login-right {
       flex: 1;
-      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-left: 1px solid #ffe0c2;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
-      border-left: 1px solid #e2e8f0;
     }
 
     .hero-image {
-      width: 80%;
-      height: 80%;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"><rect width="400" height="400" fill="%23f8fafc"/><circle cx="200" cy="160" r="30" fill="%23e2e8f0"/><rect x="170" y="200" width="60" height="80" rx="8" fill="%23ffffff" stroke="%23e5e7eb" stroke-width="1"/><rect x="140" y="300" width="120" height="50" rx="6" fill="%23ffffff" stroke="%23e5e7eb" stroke-width="1"/></svg>') center/contain no-repeat;
-      opacity: 0.8;
+      width: 100%;
+      height: 100%;
+      background: url("images/image.png") center center / cover no-repeat;
     }
 
+    /* --- Branding --- */
     .ntro-logo {
       display: flex;
       align-items: center;
-      margin-bottom: 80px;
+      margin-bottom: 40px;
     }
 
     .ntro-icon {
       font-size: 36px;
       font-weight: 700;
-      color: #2563eb;
-      margin-right: 12px;
+      color: #ff751f;
+      margin-right: 10px;
     }
 
     .ntro-text {
@@ -82,14 +82,16 @@
 
     .ntro-version {
       font-size: 12px;
-      color: #6b7280;
-      margin-top: 2px;
+      color: #9ca3af;
       display: block;
     }
 
+    /* --- Welcome Section --- */
     .welcome-section {
-      margin-bottom: 48px;
+      margin-bottom: 32px;
+      max-width: 320px;
     }
+
 
     .welcome-title {
       font-size: 24px;
@@ -105,57 +107,76 @@
       line-height: 1.5;
     }
 
+    /* --- Login Options --- */
     .login-options {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       margin-bottom: 40px;
+      width: 100%;
     }
 
     .login-button {
-      background: #2563eb;
-      color: white;
       border: none;
+      border-radius: 10px;
       padding: 14px 32px;
-      border-radius: 8px;
       font-weight: 500;
       font-size: 14px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.25s ease;
+      box-shadow: 0 2px 8px rgba(255, 117, 31, 0.25);
     }
 
-    .login-button:hover {
-      background: #1d4ed8;
+
+    .google-btn {
+      background: white;
+      color: #444;
+      border: 1px solid #ddd;
+    }
+
+    .google-btn:hover {
+      background: #f9fafb;
+    }
+
+    .website-btn {
+      background: #ff751f;
+      color: white;
+    }
+
+    .website-btn:hover {
+      background: #e9630d;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
+    /* --- Login Form --- */
     .login-form {
       display: none;
       flex-direction: column;
       gap: 16px;
-      margin-bottom: 40px;
+      width: 100%;
+      max-width: 320px;
+      animation: fadeIn 0.3s ease;
     }
 
     .login-form input {
       width: 100%;
       padding: 12px 16px;
       border: 1px solid #d1d5db;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 14px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: 0.2s;
     }
 
     .login-form input:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      border-color: #ff751f;
+      box-shadow: 0 0 0 3px rgba(255, 117, 31, 0.15);
     }
 
     .login-form-actions {
       display: flex;
       gap: 12px;
+      justify-content: center;
     }
 
     .btn-back {
@@ -163,41 +184,45 @@
       color: #6b7280;
       border: 1px solid #d1d5db;
       padding: 10px 20px;
-      border-radius: 6px;
+      border-radius: 8px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: 0.2s;
     }
 
     .btn-back:hover {
       background: #f9fafb;
-      border-color: #9ca3af;
     }
 
     .btn-login {
-      background: #2563eb;
+      background: #ff751f;
       color: white;
       border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
+      padding: 10px 24px;
+      border-radius: 8px;
       font-weight: 500;
       cursor: pointer;
-      flex: 1;
-      transition: background 0.2s;
+      transition: 0.2s;
     }
 
     .btn-login:hover {
-      background: #1d4ed8;
+      background: #e9630d;
     }
 
+    /* --- Signup link --- */
     .signup-link {
       color: #6b7280;
       font-size: 13px;
       text-align: center;
+      /* Center text */
+      margin-top: 5px;
+      /* Push it to bottom */
+      width: 100%;
+      /* Take full width to center properly */
     }
 
     .signup-link a {
-      color: #2563eb;
+      color: #ff751f;
       text-decoration: none;
       font-weight: 500;
     }
@@ -205,6 +230,20 @@
     .signup-link a:hover {
       text-decoration: underline;
     }
+
+    /* --- Animations --- */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
 
     /* After Login Screen */
     .dashboard-container {
@@ -222,7 +261,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #ffffff;
+      background: #333354;
+      color: white
     }
 
     .user-info {
@@ -233,7 +273,7 @@
 
     .user-name {
       font-weight: 600;
-      color: #1f2937;
+      /* color: #1f2937; */
       font-size: 16px;
     }
 
@@ -242,22 +282,22 @@
       align-items: center;
       gap: 6px;
       font-size: 14px;
-      color: #059669;
+      color: white;
       margin-top: 4px;
     }
 
     .coin-icon {
       width: 14px;
       height: 14px;
-      background: #059669;
+      background: white;
       border-radius: 50%;
       display: inline-block;
     }
 
     .user-plan {
-      color: #059669;
+      color: white;
       font-size: 12px;
-      background: rgba(5, 150, 105, 0.1);
+      background: rgba(118, 120, 119, 0.1);
       padding: 4px 8px;
       border-radius: 4px;
       margin-top: 4px;
@@ -265,15 +305,16 @@
     }
 
     .power-btn {
-      background: transparent;
-      border: 1px solid #d1d5db;
-      color: #6b7280;
+      background: #ff6e00;
+      border: 1px solid #ff6e00;
+      color: white;
       font-size: 14px;
       cursor: pointer;
       padding: 8px 16px;
       border-radius: 6px;
       transition: all 0.2s;
       font-weight: 500;
+      box-shadow: 0 2px 8px rgba(255, 117, 31, 0.25);
     }
 
     .power-btn:hover {
@@ -289,53 +330,67 @@
       border-right: 1px solid #e5e7eb;
     }
 
+    .sidebar {
+      width: 250px;
+      font-family: 'Inter', sans-serif;
+    }
+
     .sidebar-nav {
       list-style: none;
+      padding: 0;
+      margin: 0;
+      position: relative;
     }
 
     .sidebar-nav li {
-      margin-bottom: 12px;
       display: flex;
-      align-items: center;
-      padding: 12px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 1px solid transparent;
+      align-items: flex-start;
+      gap: 12px;
+      position: relative;
+      padding: 10px 0;
     }
 
-    .sidebar-nav li:hover {
-      background: #ffffff;
-      border-color: #e5e7eb;
-    }
-
-    .sidebar-nav li.active {
-      background: #eff6ff;
-      border-color: #dbeafe;
-      color: #1d4ed8;
+    .sidebar-nav li:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 30px;
+      width: 2px;
+      height: 45px;
+      background: #e5e7eb;
     }
 
     .nav-icon {
-      width: 18px;
-      height: 18px;
-      background: currentColor;
-      border-radius: 4px;
-      opacity: 0.6;
-      margin-right: 12px;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #d1d5db;
+      border-radius: 50%;
+      margin-top: 4px;
       flex-shrink: 0;
     }
 
+    .sidebar-nav li.active .nav-icon {
+      border-color: #ff751f;
+      background-color: #fff;
+    }
+
     .nav-text {
-      font-weight: 500;
-      font-size: 14px;
+      font-weight: 600;
+      color: #111827;
+      font-size: 15px;
+    }
+
+    .sidebar-nav li.active .nav-text {
+      color: #ff751f;
     }
 
     .nav-subtitle {
-      font-size: 12px;
-      opacity: 0.6;
-      margin-top: 2px;
       color: #6b7280;
+      font-size: 13px;
+      line-height: 1.4;
+      margin-top: 2px;
     }
+
 
     .dashboard-main {
       padding: 24px;
@@ -388,10 +443,10 @@
     }
 
     .create-new-btn {
-      background: #2563eb;
+      background: #ff6e00;
       color: white;
       border: none;
-      padding: 12px 20px;
+      padding: 10px 20px;
       border-radius: 6px;
       font-weight: 500;
       cursor: pointer;
@@ -400,15 +455,16 @@
       right: 24px;
       font-size: 13px;
       transition: background 0.2s;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(255, 117, 31, 0.25);
     }
 
-    .create-new-btn:hover {
+    /* .create-new-btn:hover {
       background: #1d4ed8;
-    }
+    } */
 
     .scheduled-interviews-section {
-      margin-top: 24px;
+      margin-top: 7px;
+      width: 400px;
     }
 
     .section-title {
@@ -416,6 +472,7 @@
       font-weight: 600;
       margin-bottom: 16px;
       padding: 0 24px;
+      
     }
 
     /* Create Form Screen */
@@ -444,7 +501,8 @@
       max-height: 520px;
       overflow-y: auto;
       position: relative;
-      background: #ffffff;
+      background: #333354;
+      color: white;
     }
 
     .form-group {
@@ -458,7 +516,9 @@
       font-size: 14px;
     }
 
-    .form-input, .form-select, .form-textarea {
+    .form-input,
+    .form-select,
+    .form-textarea {
       width: 100%;
       background: #ffffff;
       border: 1px solid #d1d5db;
@@ -470,7 +530,9 @@
       transition: border-color 0.2s, box-shadow 0.2s;
     }
 
-    .form-input:focus, .form-select:focus, .form-textarea:focus {
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
       border-color: #2563eb;
       box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     }
@@ -491,7 +553,8 @@
       padding: 8px;
     }
 
-    .form-input::placeholder, .form-textarea::placeholder {
+    .form-input::placeholder,
+    .form-textarea::placeholder {
       color: #9ca3af;
     }
 
@@ -551,8 +614,8 @@
       display: flex;
       gap: 12px;
       padding: 20px 24px;
-      border-top: 1px solid #e5e7eb;
-      background: #f9fafb;
+      border-top: 1px solid #ff6e00;
+      /* background: #f9fafb; */
     }
 
     .btn-secondary {
@@ -573,7 +636,7 @@
     }
 
     .btn-primary {
-      background: #2563eb;
+      background: #ff6e00;
       color: white;
       border: none;
       padding: 10px 20px;
@@ -584,12 +647,12 @@
       transition: background 0.2s;
     }
 
-    .btn-primary:hover {
+    /* .btn-primary:hover {
       background: #1d4ed8;
-    }
+    } */
 
     .hidden {
-      display: none !important; 
+      display: none !important;
     }
 
     .form-content::-webkit-scrollbar {
@@ -622,7 +685,7 @@
     }
 
     .sidebar {
-      width: 160px;
+      width: 250px;
       background: #f9fafb;
       padding: 24px 16px;
       border-right: 1px solid #e5e7eb;
@@ -632,35 +695,43 @@
       flex: 1;
       padding: 24px;
       position: relative;
-      background: #ffffff;
+      background: #333354;
+      color: white;
     }
   </style>
 </head>
+
 <body>
   <!-- Login Screen -->
   <div class="login-container" id="login-screen">
     <div class="login-left">
       <div class="ntro-logo">
-        <div class="ntro-icon">N</div>
+        <div class="ntro-icon">B</div>
         <div>
           <div class="ntro-text">Buzzer</div>
           <span class="ntro-version">4.7.1</span>
         </div>
       </div>
-      
+
       <div class="welcome-section">
         <h1 class="welcome-title">Welcome</h1>
-        <p class="welcome-subtitle">to the world's leading stealth AI copilot for your online meetings!</p>
+        <p class="welcome-subtitle">
+          to the world's leading stealth AI copilot for your online meetings!
+        </p>
       </div>
 
-      <div class="login-options">
-        <button class="login-button google-btn" id="google-login-btn">Continue with Google</button>
-        <button class="login-button website-btn" id="website-login-btn">Login by Website</button>
+      <div class="login-options" id="login-options">
+        <button class="login-button google-btn" id="google-login-btn">
+          Continue with Google
+        </button>
+        <button class="login-button website-btn" id="website-login-btn">
+          Login by Website
+        </button>
       </div>
 
       <div class="login-form" id="login-form">
-        <input type="email" placeholder="Email" id="login-email">
-        <input type="password" placeholder="Password" id="login-password">
+        <input type="email" placeholder="Email" id="login-email" />
+        <input type="password" placeholder="Password" id="login-password" />
         <div class="login-form-actions">
           <button class="btn-back" id="form-back-btn">Back</button>
           <button class="btn-login" id="form-login-btn">Login</button>
@@ -671,11 +742,12 @@
         Do not have an account? <a href="#" id="signup-link">Sign up</a>
       </div>
     </div>
-    
+
     <div class="login-right">
       <div class="hero-image"></div>
     </div>
   </div>
+
 
   <!-- Dashboard Screen (After Login) -->
   <div class="dashboard-container" id="dashboard-screen">
@@ -685,15 +757,15 @@
           <div>
             <div class="user-name" id="user-name">User</div>
             <div class="user-balance">
-              <span class="coin-icon"></span>
-              <span id="user-balance">$0.00</span>
+              <!-- <span class="coin-icon"></span>
+              <span id="user-balance">$0.00</span> -->
             </div>
-            <div class="user-plan">Starter Plan (40 triggers per interview)</div>
+            <!-- <div class="user-plan">Starter Plan (40 triggers per interview)</div> -->
           </div>
         </div>
         <button class="power-btn" id="power-btn">Logout</button>
       </div>
-      
+
       <div class="dashboard-body">
         <div class="sidebar">
           <ul class="sidebar-nav">
@@ -720,7 +792,7 @@
             </li>
           </ul>
         </div>
-        
+
         <div class="main-content">
           <button class="create-new-btn" id="create-new-btn">+ Create New</button>
 
@@ -739,16 +811,16 @@
         <div class="user-info">
           <div>
             <div class="user-name" id="user-name-form">User</div>
-            <div class="user-balance">
+            <!-- <div class="user-balance">
               <span class="coin-icon"></span>
               <span>$0.00</span>
-            </div>
-            <div class="user-plan">Starter Plan (40 triggers per interview)</div>
+            </div> -->
+            <!-- <div class="user-plan">Starter Plan (40 triggers per interview)</div> -->
           </div>
         </div>
         <button class="power-btn">Logout</button>
       </div>
-      
+
       <div class="dashboard-body">
         <div class="sidebar">
           <ul class="sidebar-nav">
@@ -775,7 +847,8 @@
             </li>
           </ul>
         </div>
-        
+
+
         <div class="form-content">
           <div class="form-group">
             <label class="form-label">Scenario</label>
@@ -789,13 +862,13 @@
               <option value="online-assessment">Online Assessment</option>
             </select>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">Meeting URL</label>
             <input type="text" class="form-input" placeholder="The scheduled meeting page link" id="meeting-url">
             <small style="color: #f97316; font-size: 12px;">Use this page</small>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">Is Desktop Call</label>
             <div class="form-toggle">
@@ -805,7 +878,7 @@
               <span>Is meeting by desktop, not a web browser?</span>
             </div>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">Live Coding <span class="premium-badge">PREMIUM</span></label>
             <div class="form-toggle">
@@ -815,7 +888,7 @@
               <span>Will be required to share screen for coding?</span>
             </div>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">AI Interview <span class="premium-badge">PREMIUM</span></label>
             <div class="form-toggle">
@@ -825,17 +898,17 @@
               <span>Is the interviewer not human?</span>
             </div>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">Position</label>
             <input type="text" class="form-input" placeholder="e.g. Senior UI/UX Designer" id="position">
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">Company</label>
             <input type="text" class="form-input" placeholder="e.g. Google" id="company">
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">Meeting Language</label>
             <select class="form-select" id="meeting-language">
@@ -851,7 +924,7 @@
               <option value="korean">Korean</option>
             </select>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">Translation Language</label>
             <select class="form-select" id="translation-language">
@@ -867,21 +940,26 @@
               <option value="korean">Korean</option>
             </select>
           </div>
-      
+
           <div class="form-group">
             <label class="form-label">Resume <span class="premium-badge">PREMIUM</span></label>
-            <textarea class="form-textarea" placeholder="Input your resume if you want more tailored hint to your professional experience." id="resume"></textarea>
+            <textarea class="form-textarea"
+              placeholder="Input your resume if you want more tailored hint to your professional experience."
+              id="resume"></textarea>
           </div>
-          
+
           <div class="form-actions">
             <button class="btn-secondary" id="back-btn">Back</button>
             <button class="btn-primary" id="save-btn">Save</button>
           </div>
         </div>
+
+
       </div>
     </div>
   </div>
 
   <script type="module" src="popup.js"></script>
 </body>
+
 </html>

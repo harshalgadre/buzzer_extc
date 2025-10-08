@@ -110,7 +110,12 @@ function displaySessions(sessions) {
       <p class="interview-time">${new Date(
         session.createdAt
       ).toLocaleString()} (${session.meetingLanguage})</p>
-      <p style="color: #d1d5db; font-size: 12px;">URL: ${session.meetingUrl}</p>
+      <p style="  color: #d1d5db; 
+  font-size: 12px; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  width: 100%;">URL: ${session.meetingUrl}</p>
       ${
         session.liveCoding
           ? '<span class="premium-badge">Live Coding</span>'
@@ -122,19 +127,24 @@ function displaySessions(sessions) {
           : ""
       }
       <div style="display: flex; gap: 8px; margin-top: 16px;">
-        <button class="start-btn open-meeting-btn" data-url="${
-          session.meetingUrl
-        }"  style="background: white; color: #ff6e00; border: 2px solid #ff6e00; flex: 1;">
-          Open Meeting
-        </button>
-        <button class="start-btn start-ai-btn" data-session-id="${
-          session._id
-        }" data-meeting-url="${
-      session.meetingUrl
-    }" style="background: #ff6e00; flex: 1;">
-          Start AI Helper
-        </button>
-      </div>
+  <button
+    class="start-btn open-meeting-btn"
+    data-url="${session.meetingUrl}"
+    style="background: white; color: #ff6e00; border: 2px solid #ff6e00; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(255, 117, 31, 0.25);"
+  >
+    Open Meeting
+  </button>
+
+  <button
+    class="start-btn start-ai-btn"
+    data-session-id="${session._id}"
+    data-meeting-url="${session.meetingUrl}"
+    style="background: #ff6e00; text-align: center; flex: 1; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(255, 117, 31, 0.25);"
+  >
+    Start
+  </button>
+</div>
+
     `;
     container.appendChild(sessionCard);
   });
